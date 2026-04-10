@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import {
   Participant,
@@ -168,12 +169,14 @@ export default function LeaderboardPage() {
       {/* Header */}
       <header className="bg-cfa-navy/90 border-b border-white/10 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-5">
-          <Image
-            src="/logo-hyrox.png"
-            alt="CrossFit Alkmaar"
-            width={160}
-            height={80}
-          />
+          <Link href="/">
+            <Image
+              src="/logo-hyrox.png"
+              alt="CrossFit Alkmaar"
+              width={160}
+              height={80}
+            />
+          </Link>
           <div className="h-10 w-px bg-white/20" />
           <h1 className="text-3xl font-bold tracking-tight">
             HYROX <span className="text-cfa-yellow">LEADERBOARD</span>
