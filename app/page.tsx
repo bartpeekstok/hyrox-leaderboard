@@ -6,11 +6,11 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="text-center mb-12">
         <Image
-          src="/logo.png"
+          src="/logo-hyrox.png"
           alt="CrossFit Alkmaar"
           width={200}
-          height={80}
-          className="mx-auto mb-6 hue-rotate-[165deg] saturate-[4] brightness-150"
+          height={100}
+          className="mx-auto mb-6"
           priority
         />
         <h1 className="text-5xl font-bold mb-2 tracking-tight">

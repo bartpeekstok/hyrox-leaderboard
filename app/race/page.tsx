@@ -177,11 +177,10 @@ export default function RaceControlPage() {
           <div className="flex items-center gap-4">
             <Link href="/">
               <Image
-                src="/logo.png"
+                src="/logo-hyrox.png"
                 alt="CrossFit Alkmaar"
                 width={120}
-                height={48}
-                className="hue-rotate-[165deg] saturate-[4] brightness-150"
+                height={60}
               />
             </Link>
             <div>

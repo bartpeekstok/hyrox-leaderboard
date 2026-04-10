@@ -158,11 +158,10 @@ export default function LeaderboardPage() {
       <header className="bg-cfa-navy/90 border-b border-white/10 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Image
-            src="/logo.png"
+            src="/logo-hyrox.png"
             alt="CrossFit Alkmaar"
             width={140}
-            height={56}
-            className="hue-rotate-[165deg] saturate-[4] brightness-150"
+            height={70}
           />
           <div className="h-8 w-px bg-white/20" />
           <div>
