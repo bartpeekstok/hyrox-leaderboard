@@ -206,7 +206,7 @@ export default function RaceControlPage() {
             Finish registreren
           </h2>
           <form onSubmit={handleFinishByNumber} className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative order-1 sm:order-2">
+            <div className="flex-1 relative order-2 sm:order-2">
               <input
                 ref={finishInputRef}
                 type="number"
@@ -237,7 +237,7 @@ export default function RaceControlPage() {
             </div>
             <button
               type="submit"
-              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold text-xl px-10 py-4 rounded-xl transition-colors order-2 sm:order-1"
+              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold text-xl px-10 py-4 rounded-xl transition-colors order-1 sm:order-1"
             >
               FINISH
             </button>
