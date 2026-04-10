@@ -1,32 +1,38 @@
-import { Participant, Heat, Category, Division, getCategoryWeightClass, WeightClass } from './types';
+import { Participant, Heat, Category, Division } from './types';
 
 /**
- * Heat Scheduling Algorithm for HYROX Race Simulation
+ * Heat Scheduling Algorithm for HYROX Race Simulation - CrossFit Alkmaar
  *
- * Key constraints:
- * - 3 sets of equipment per station (max 3 people at any station simultaneously)
- * - Heats of 3 people, starting every N minutes
- * - Must prevent overtaking (fast person from later heat catching slow person from earlier heat)
- * - Minimize equipment weight changes between heats
+ * Only the SLEDS need weight changes (push + pull). All other stations:
+ * participants grab their own weight (wall balls, sandbag, farmers carry)
+ * or have no weight (SkiErg, rowing, burpees).
  *
- * Strategy:
- * 1. Group participants by category (same weight requirements)
- * 2. Within each group, sort by estimated time (fastest first)
- * 3. Create heats of 3 from same category
- * 4. Cluster heats by weight class so equipment doesn't need constant switching
- * 5. Within each weight class cluster, order fastest first (prevents overtaking)
- * 6. Order weight class clusters: men -> mixed -> women (logical weight transition)
+ * 3 Sled Weight Blocks (only 2 changes the entire day):
+ *   Block 1 - 202/153 kg: Pro Men, Duo MM Pro
+ *   Block 2 - 152/103 kg: Open Men, Pro Women, Duo MM Open, ALL Duo MW, Duo WW Pro
+ *   Block 3 - 102/78 kg:  Open Women, Duo WW Open
  *
- * HYROX Station Equipment Weights:
- * - SkiErg: no weight difference
- * - Sled Push: Pro Men 152kg, Open Men 102kg, Pro Women 102kg, Open Women 72kg
- * - Sled Pull: Pro Men 103kg, Open Men 78kg, Pro Women 78kg, Open Women 53kg
- * - Burpee Broad Jump: no equipment
- * - Rowing: no weight difference
- * - Farmers Carry: Pro Men 2x32kg, Open Men 2x24kg, Pro Women 2x24kg, Open Women 2x16kg
- * - Sandbag Lunges: Pro Men 30kg, Open Men 20kg, Pro Women 20kg, Open Women 10kg
- * - Wall Balls: Pro Men 9kg, Open Men 6kg, Pro Women 6kg, Open Women 4kg
+ * Within each block: sorted by estimated time, fastest first (prevents overtaking).
+ * Between blocks: sled weight change.
  */
+
+type SledBlock = 1 | 2 | 3;
+
+function getSledBlock(division: Division, category: Category): SledBlock {
+  // Block 1: Pro Men, Duo MM Pro (202/153 kg)
+  if (division === 'pro' && (category === 'single_men' || category === 'duo_mm')) {
+    return 1;
+  }
+
+  // Block 3: Open Women, Duo WW Open (102/78 kg)
+  if (division === 'open' && (category === 'single_women' || category === 'duo_ww')) {
+    return 3;
+  }
+
+  // Block 2: Everything else (152/103 kg)
+  // Open Men, Pro Women, Duo MM Open, ALL Duo MW, Duo WW Pro
+  return 2;
+}
 
 export function generateHeats(
   participants: Participant[],
@@ -35,37 +41,34 @@ export function generateHeats(
 ): Heat[] {
   if (participants.length === 0) return [];
 
-  // Step 1: Group by division + category (exact weight match)
-  const groups = new Map<string, Participant[]>();
+  // Step 1: Assign each participant to a sled block and group them
+  const blocks = new Map<SledBlock, Participant[]>();
+  blocks.set(1, []);
+  blocks.set(2, []);
+  blocks.set(3, []);
 
   for (const p of participants) {
-    const key = `${p.division}_${p.category}`;
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
-    groups.get(key)!.push(p);
+    const block = getSledBlock(p.division, p.category);
+    blocks.get(block)!.push(p);
   }
 
-  // Step 2: Within each group, sort by estimated time (fastest first)
-  for (const ps of groups.values()) {
+  // Step 2: Within each block, sort by estimated time (fastest first)
+  for (const ps of blocks.values()) {
     ps.sort((a, b) => a.estimatedTime - b.estimatedTime);
   }
 
-  // Step 3: Create heats of 3 from each group
+  // Step 3: Create heats of 3 within each block
   type HeatDraft = {
     participants: Participant[];
     avgEstimatedTime: number;
-    division: Division;
-    category: Category;
-    weightClass: WeightClass;
+    block: SledBlock;
   };
 
   const allHeats: HeatDraft[] = [];
 
-  for (const [key, ps] of groups.entries()) {
-    const [division, category] = key.split('_') as [Division, Category];
-    const weightClass = getCategoryWeightClass(category);
-
+  // Process blocks in order: 1 (heaviest) → 2 (middle) → 3 (lightest)
+  for (const blockNum of [1, 2, 3] as SledBlock[]) {
+    const ps = blocks.get(blockNum)!;
     for (let i = 0; i < ps.length; i += 3) {
       const heatParticipants = ps.slice(i, i + 3);
       const avg =
@@ -74,73 +77,41 @@ export function generateHeats(
       allHeats.push({
         participants: heatParticipants,
         avgEstimatedTime: avg,
-        division,
-        category,
-        weightClass,
+        block: blockNum,
       });
     }
   }
 
-  // Step 4: Cluster by weight class to minimize equipment changes
-  // Within each cluster, order by estimated time (fastest first = prevents overtaking)
-  // Order of clusters: fastest avg across all clusters first, but grouped by weight class
+  // Step 4: Assign heat numbers and scheduled times
+  // Add buffer slots between sled weight blocks for:
+  // - Time to change sled weights
+  // - Prevent fast people in new block from catching slow people in previous block
+  const BUFFER_SLOTS_BETWEEN_BLOCKS = 2; // 2 empty slots = 20 min buffer at 10 min intervals
 
-  // Group heats by division+weightClass (exact equipment setup)
-  const equipmentGroups = new Map<string, HeatDraft[]>();
-  for (const h of allHeats) {
-    const key = `${h.division}_${h.weightClass}`;
-    if (!equipmentGroups.has(key)) {
-      equipmentGroups.set(key, []);
-    }
-    equipmentGroups.get(key)!.push(h);
-  }
-
-  // Within each equipment group, sort fastest first
-  for (const heats of equipmentGroups.values()) {
-    heats.sort((a, b) => a.avgEstimatedTime - b.avgEstimatedTime);
-  }
-
-  // Order equipment groups logically to minimize weight changes:
-  // Pro Men -> Open Men -> Duo MM -> Duo MW -> Pro Women -> Open Women -> Duo WW
-  const groupOrder = [
-    'pro_men',
-    'open_men',
-    'pro_mixed',   // duo MW pro
-    'open_mixed',  // duo MW open
-    'pro_women',
-    'open_women',
-  ];
-
-  const orderedHeats: HeatDraft[] = [];
-
-  // First add in preferred order
-  for (const key of groupOrder) {
-    const heats = equipmentGroups.get(key);
-    if (heats) {
-      orderedHeats.push(...heats);
-      equipmentGroups.delete(key);
-    }
-  }
-
-  // Then add any remaining groups we didn't explicitly order
-  for (const heats of equipmentGroups.values()) {
-    orderedHeats.push(...heats);
-  }
-
-  // Step 5: Assign heat numbers and scheduled times
   const [baseHours, baseMinutes] = startTimeBase.split(':').map(Number);
   const baseMinutesTotal = baseHours * 60 + baseMinutes;
 
-  return orderedHeats.map((h, index) => {
-    const minutesOffset = index * intervalMinutes;
+  let slotIndex = 0;
+  let previousBlock: SledBlock | null = null;
+
+  return allHeats.map((h, heatIndex) => {
+    // Add buffer when switching between sled weight blocks
+    if (previousBlock !== null && h.block !== previousBlock) {
+      slotIndex += BUFFER_SLOTS_BETWEEN_BLOCKS;
+    }
+    previousBlock = h.block;
+
+    const minutesOffset = slotIndex * intervalMinutes;
     const totalMinutes = baseMinutesTotal + minutesOffset;
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
     const scheduledTime = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 
+    slotIndex++;
+
     return {
-      id: `heat_${index + 1}`,
-      heatNumber: index + 1,
+      id: `heat_${heatIndex + 1}`,
+      heatNumber: heatIndex + 1,
       scheduledTime,
       participantIds: h.participants.map((p) => p.id),
       status: 'scheduled' as const,
