@@ -181,7 +181,7 @@ export default function RaceControlPage() {
                 alt="CrossFit Alkmaar"
                 width={120}
                 height={48}
-                className="invert"
+                className="invert hue-rotate-180 saturate-200 brightness-110"
               />
             </Link>
             <div>

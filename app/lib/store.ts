@@ -254,31 +254,34 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   if (!match) throw new Error('Ongeldige Google Sheets URL');
   const sheetId = match[1];
 
-  // Fetch as CSV (sheet must be published or shared as "anyone with link")
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+  // Fetch as CSV - most reliable method, works with "anyone with link" sharing
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
   const res = await fetch(csvUrl);
+  if (!res.ok) {
+    throw new Error('Kan sheet niet laden. Staat de sheet op "Iedereen met de link"?');
+  }
   const text = await res.text();
 
-  // Parse Google's JSON response (wrapped in google.visualization.Query.setResponse(...))
-  const jsonStr = text.replace(/^.*google\.visualization\.Query\.setResponse\(/, '').replace(/\);?\s*$/, '');
-  const json = JSON.parse(jsonStr);
+  // Parse CSV
+  const lines = text.split('\n').map((line) => parseCSVLine(line));
+  if (lines.length < 2) throw new Error('Sheet is leeg');
 
-  const rows = json.table.rows as { c: ({ v: string | number | null } | null)[] }[];
-  const headers = json.table.cols as { label: string }[];
+  // First row is headers
+  const headers = lines[0].map((h) => h.toLowerCase().trim());
+  const dataRows = lines.slice(1);
 
-  // Find column indices
+  // Find column indices from headers
   const colMap: Record<string, number> = {};
-  headers.forEach((col, i) => {
-    const label = (col.label || '').toLowerCase().trim();
-    if (label.includes('ind') || label.includes('duo')) colMap.category = i;
-    if (label.includes('divisie')) colMap.division = i;
-    if (label.includes('naam')) colMap.name = i;
-    if (label.includes('telefoon')) colMap.phone = i;
-    if (label.includes('e-mail') || label.includes('email')) colMap.email = i;
-    if (label.includes('geschatte') || label.includes('eindtijd')) colMap.estimatedTime = i;
+  headers.forEach((h, i) => {
+    if (h.includes('ind') || h.includes('duo') || h === 'a') colMap.category = i;
+    if (h.includes('divisie')) colMap.division = i;
+    if (h.includes('naam')) colMap.name = i;
+    if (h.includes('telefoon')) colMap.phone = i;
+    if (h.includes('e-mail') || h.includes('email')) colMap.email = i;
+    if (h.includes('geschatte') || h.includes('eindtijd')) colMap.estimatedTime = i;
   });
 
-  // If headers aren't labeled, use position (based on the screenshot)
+  // Fallback to position if headers don't match
   if (colMap.category === undefined) colMap.category = 0;
   if (colMap.division === undefined) colMap.division = 1;
   if (colMap.name === undefined) colMap.name = 2;
@@ -286,43 +289,31 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   if (colMap.email === undefined) colMap.email = 4;
   if (colMap.estimatedTime === undefined) colMap.estimatedTime = 5;
 
-  // Get existing participants to avoid duplicates (match by name+email)
+  // Get existing participants to avoid duplicates
   const existing = await getParticipants();
   const existingKeys = new Set(
-    existing.map((p) => `${p.name.toLowerCase().trim()}`)
+    existing.map((p) => p.name.toLowerCase().trim())
   );
 
-  // Parse and import
   const { parseEstimatedTime, mapSheetCategory, mapSheetDivision } = await import('./types');
 
   const newParticipants: (Omit<Participant, 'id' | 'status' | 'startNumber'> & { startNumber?: number })[] = [];
 
-  for (const row of rows) {
-    const getVal = (col: number): string => {
-      const cell = row.c[col];
-      if (!cell || cell.v === null || cell.v === undefined) return '';
-      return String(cell.v).trim();
-    };
+  for (const row of dataRows) {
+    const getVal = (col: number): string => (row[col] || '').trim();
 
     const name = getVal(colMap.name);
     if (!name) continue;
 
-    // Skip if already exists
     if (existingKeys.has(name.toLowerCase().trim())) continue;
-
-    const categoryRaw = getVal(colMap.category);
-    const divisionRaw = getVal(colMap.division);
-    const estimatedTimeRaw = getVal(colMap.estimatedTime);
-    const email = getVal(colMap.email);
-    const phone = getVal(colMap.phone);
 
     newParticipants.push({
       name,
-      division: mapSheetDivision(divisionRaw),
-      category: mapSheetCategory(categoryRaw),
-      estimatedTime: parseEstimatedTime(estimatedTimeRaw),
-      email: email || undefined,
-      phone: phone || undefined,
+      division: mapSheetDivision(getVal(colMap.division)),
+      category: mapSheetCategory(getVal(colMap.category)),
+      estimatedTime: parseEstimatedTime(getVal(colMap.estimatedTime)),
+      email: getVal(colMap.email) || undefined,
+      phone: getVal(colMap.phone) || undefined,
     });
   }
 
@@ -335,6 +326,32 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
     existing: existing.length,
     total: existing.length + newParticipants.length,
   };
+}
+
+// Parse a CSV line handling quoted fields with commas
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
 }
 
 // ==================== SETTINGS ====================

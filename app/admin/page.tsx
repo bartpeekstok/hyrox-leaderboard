@@ -72,6 +72,13 @@ export default function AdminPage() {
     fetchData();
   }, [fetchData]);
 
+  // Auto-enable sync when sheet URL is loaded
+  useEffect(() => {
+    if (sheetUrl && !autoSync) {
+      setAutoSync(true);
+    }
+  }, [sheetUrl]);
+
   // Auto-sync every 30 seconds when enabled
   useEffect(() => {
     if (!autoSync || !sheetUrl) return;
@@ -211,7 +218,7 @@ export default function AdminPage() {
                 alt="CrossFit Alkmaar"
                 width={120}
                 height={48}
-                className="invert"
+                className="invert hue-rotate-180 saturate-200 brightness-110"
               />
             </Link>
             <div>
