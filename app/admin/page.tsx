@@ -15,7 +15,6 @@ import { generateHeats } from "../lib/heat-scheduler";
 import {
   getParticipants,
   addParticipant,
-  addParticipantsBulk,
   updateParticipant,
   deleteParticipant,
   deleteAllParticipants,
@@ -23,6 +22,7 @@ import {
   saveHeats,
   getSettings,
   updateSettings,
+  syncFromGoogleSheet,
 } from "../lib/store";
 
 export default function AdminPage() {
@@ -40,10 +40,12 @@ export default function AdminPage() {
   // Settings
   const [startTime, setStartTime] = useState("09:00");
   const [heatInterval, setHeatInterval] = useState(10);
+  const [sheetUrl, setSheetUrl] = useState("");
 
-  // Bulk import
-  const [bulkText, setBulkText] = useState("");
-  const [showBulk, setShowBulk] = useState(false);
+  // Sync state
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const [autoSync, setAutoSync] = useState(false);
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -59,6 +61,7 @@ export default function AdminPage() {
       setHeats(h);
       setStartTime(s.startTimeBase);
       setHeatInterval(s.heatInterval);
+      if (s.sheetUrl) setSheetUrl(s.sheetUrl);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
@@ -68,6 +71,28 @@ export default function AdminPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-sync every 30 seconds when enabled
+  useEffect(() => {
+    if (!autoSync || !sheetUrl) return;
+    const interval = setInterval(async () => {
+      try {
+        const result = await syncFromGoogleSheet(sheetUrl);
+        if (result.added > 0) {
+          setSyncResult(`+${result.added} nieuwe deelnemers (totaal: ${result.total})`);
+          fetchData();
+          // Auto-regenerate heats
+          const updatedParticipants = await getParticipants();
+          const newHeats = generateHeats(updatedParticipants, startTime, heatInterval);
+          await saveHeats(newHeats);
+          fetchData();
+        }
+      } catch {
+        // Silent fail for auto-sync
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [autoSync, sheetUrl, startTime, heatInterval, fetchData]);
 
   const isDuo = category.startsWith("duo_");
 
@@ -124,37 +149,36 @@ export default function AdminPage() {
   }
 
   async function handleGenerateHeats() {
-    await updateSettings(startTime, heatInterval);
+    await updateSettings(startTime, heatInterval, sheetUrl);
     const newHeats = generateHeats(participants, startTime, heatInterval);
     await saveHeats(newHeats);
     fetchData();
   }
 
-  async function handleBulkImport() {
-    const lines = bulkText.trim().split("\n").filter(Boolean);
-    const items = lines.map((line) => {
-      const parts = line.split(",").map((s) => s.trim());
-      if (parts.length === 5) {
-        return {
-          name: parts[0],
-          partnerName: parts[1],
-          division: parts[2] as Division,
-          category: parts[3] as Category,
-          estimatedTime: parseInt(parts[4]),
-        };
+  async function handleSync() {
+    if (!sheetUrl) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      await updateSettings(startTime, heatInterval, sheetUrl);
+      const result = await syncFromGoogleSheet(sheetUrl);
+      setSyncResult(
+        `${result.added} nieuwe deelnemers toegevoegd (totaal: ${result.total})`
+      );
+      if (result.added > 0) {
+        await fetchData();
+        // Auto-regenerate heats after sync
+        const updatedParticipants = await getParticipants();
+        const newHeats = generateHeats(updatedParticipants, startTime, heatInterval);
+        await saveHeats(newHeats);
+        fetchData();
+      } else {
+        fetchData();
       }
-      return {
-        name: parts[0],
-        division: parts[1] as Division,
-        category: parts[2] as Category,
-        estimatedTime: parseInt(parts[3]),
-      };
-    });
-
-    await addParticipantsBulk(items);
-    setBulkText("");
-    setShowBulk(false);
-    fetchData();
+    } catch (err) {
+      setSyncResult(`Fout: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
+    }
+    setSyncing(false);
   }
 
   const participantsByCategory = participants.reduce(
@@ -201,16 +225,70 @@ export default function AdminPage() {
             <span className="bg-cfa-blue/30 text-cfa-green px-3 py-1 rounded-full text-sm font-semibold">
               {heats.length} heats
             </span>
+            {autoSync && (
+              <span className="bg-cfa-green/20 text-cfa-green px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+                Auto-sync AAN
+              </span>
+            )}
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Add Participant Form */}
+        {/* Left Column */}
         <div className="lg:col-span-1 space-y-6">
+          {/* Google Sheets Sync */}
+          <div className="bg-cfa-navy/60 border border-cfa-yellow/20 rounded-xl p-6">
+            <h2 className="text-lg font-bold mb-4 text-cfa-yellow">
+              Google Sheets Sync
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Google Sheets URL
+                </label>
+                <input
+                  type="url"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-cfa-yellow focus:outline-none"
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSync}
+                  disabled={syncing || !sheetUrl}
+                  className="flex-1 bg-cfa-yellow hover:bg-cfa-yellow-hover disabled:opacity-50 text-black font-bold py-2 rounded-lg transition-colors"
+                >
+                  {syncing ? "Syncing..." : "Sync nu"}
+                </button>
+                <button
+                  onClick={() => setAutoSync(!autoSync)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                    autoSync
+                      ? "bg-cfa-green/20 text-cfa-green border border-cfa-green/30"
+                      : "bg-white/10 text-gray-400 hover:bg-white/20"
+                  }`}
+                >
+                  Auto {autoSync ? "AAN" : "UIT"}
+                </button>
+              </div>
+              {syncResult && (
+                <p className="text-sm text-cfa-green bg-cfa-green/10 rounded-lg px-3 py-2">
+                  {syncResult}
+                </p>
+              )}
+              <p className="text-xs text-gray-500">
+                Sheet moet &quot;Iedereen met link&quot; toegang hebben. Kolommen: IND/DUO, DIVISIE, NAAM, TELEFOON, E-MAIL, GESCHATTE EINDTIJD
+              </p>
+            </div>
+          </div>
+
+          {/* Add Participant Form */}
           <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
             <h2 className="text-lg font-bold mb-4">
-              {editingId ? "Deelnemer bewerken" : "Deelnemer toevoegen"}
+              {editingId ? "Deelnemer bewerken" : "Handmatig toevoegen"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -315,41 +393,6 @@ export default function AdminPage() {
                 )}
               </div>
             </form>
-          </div>
-
-          {/* Bulk Import */}
-          <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
-            <button
-              onClick={() => setShowBulk(!showBulk)}
-              className="text-sm text-cfa-yellow hover:underline mb-3"
-            >
-              {showBulk ? "Verberg" : "Toon"} bulk import
-            </button>
-            {showBulk && (
-              <div className="space-y-3">
-                <p className="text-xs text-gray-400">
-                  Formaat per regel: naam,divisie,categorie,minuten
-                  <br />
-                  Duo: naam,partnernaam,divisie,categorie,minuten
-                  <br />
-                  Voorbeeld: Jan Jansen,open,single_men,65
-                </p>
-                <textarea
-                  value={bulkText}
-                  onChange={(e) => setBulkText(e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-mono h-32 focus:border-cfa-yellow focus:outline-none"
-                  placeholder={
-                    "Jan Jansen,open,single_men,65\nLisa de Vries,pro,single_women,55"
-                  }
-                />
-                <button
-                  onClick={handleBulkImport}
-                  className="w-full bg-cfa-yellow hover:bg-cfa-yellow-hover text-black font-semibold py-2 rounded-lg transition-colors"
-                >
-                  Importeren
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Heat Settings */}
@@ -457,6 +500,9 @@ export default function AdminPage() {
                           className="text-sm text-gray-300 flex justify-between"
                         >
                           <span>
+                            <span className="text-cfa-yellow font-mono font-bold mr-2">
+                              #{p.startNumber}
+                            </span>
                             {p.name}
                             {p.partnerName && ` & ${p.partnerName}`}
                           </span>
@@ -484,17 +530,20 @@ export default function AdminPage() {
                   <div key={key} className="mb-6 last:mb-0">
                     <h3 className="text-sm font-semibold text-cfa-yellow mb-2 uppercase tracking-wider">
                       {DIVISION_LABELS[div as Division]} -{" "}
-                      {CATEGORY_LABELS[cat] || key}
+                      {CATEGORY_LABELS[cat] || key} ({ps.length})
                     </h3>
                     <div className="space-y-1">
                       {ps
-                        .sort((a, b) => a.estimatedTime - b.estimatedTime)
+                        .sort((a, b) => a.startNumber - b.startNumber)
                         .map((p) => (
                           <div
                             key={p.id}
                             className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 group"
                           >
                             <div className="flex items-center gap-3">
+                              <span className="text-cfa-yellow font-mono font-bold text-sm w-8">
+                                #{p.startNumber}
+                              </span>
                               <span className="text-sm font-medium">
                                 {p.name}
                                 {p.partnerName && (
@@ -537,7 +586,7 @@ export default function AdminPage() {
               })}
             {participants.length === 0 && (
               <p className="text-gray-500 text-center py-8">
-                Nog geen deelnemers. Voeg ze toe via het formulier links.
+                Nog geen deelnemers. Sync vanuit Google Sheets of voeg ze handmatig toe.
               </p>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -24,6 +24,14 @@ export default function RaceControlPage() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
 
+  // Finish input
+  const [finishInput, setFinishInput] = useState("");
+  const [finishFeedback, setFinishFeedback] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const finishInputRef = useRef<HTMLInputElement>(null);
+
   const fetchData = useCallback(async () => {
     try {
       const [p, h] = await Promise.all([getParticipants(), getHeats()]);
@@ -38,7 +46,6 @@ export default function RaceControlPage() {
   useEffect(() => {
     fetchData();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel("race-control")
       .on(
@@ -58,10 +65,14 @@ export default function RaceControlPage() {
     };
   }, [fetchData]);
 
-  // Update clock every second for live timers
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Auto-focus finish input
+  useEffect(() => {
+    finishInputRef.current?.focus();
   }, []);
 
   async function handleStartHeat(heatId: string) {
@@ -73,7 +84,65 @@ export default function RaceControlPage() {
     }
   }
 
-  async function handleFinish(participantId: string) {
+  async function handleFinishByNumber(e: React.FormEvent) {
+    e.preventDefault();
+    const num = parseInt(finishInput);
+    if (isNaN(num)) {
+      setFinishFeedback({ message: "Voer een geldig nummer in", type: "error" });
+      return;
+    }
+
+    const participant = participants.find((p) => p.startNumber === num);
+    if (!participant) {
+      setFinishFeedback({
+        message: `Nummer ${num} niet gevonden`,
+        type: "error",
+      });
+      setFinishInput("");
+      return;
+    }
+
+    if (participant.status === "finished") {
+      setFinishFeedback({
+        message: `#${num} ${participant.name} is al gefinisht`,
+        type: "error",
+      });
+      setFinishInput("");
+      return;
+    }
+
+    if (participant.status !== "racing") {
+      setFinishFeedback({
+        message: `#${num} ${participant.name} is nog niet gestart`,
+        type: "error",
+      });
+      setFinishInput("");
+      return;
+    }
+
+    try {
+      await finishParticipantDb(participant.id);
+      const elapsed = participant.startTime
+        ? formatTime(Date.now() - participant.startTime)
+        : "";
+      setFinishFeedback({
+        message: `#${num} ${participant.name} gefinisht! ${elapsed}`,
+        type: "success",
+      });
+      setFinishInput("");
+      fetchData();
+    } catch (err) {
+      setFinishFeedback({
+        message: `Fout bij finishen: ${err instanceof Error ? err.message : "onbekend"}`,
+        type: "error",
+      });
+    }
+
+    // Auto-clear feedback after 5 seconds
+    setTimeout(() => setFinishFeedback(null), 5000);
+  }
+
+  async function handleFinishClick(participantId: string) {
     try {
       await finishParticipantDb(participantId);
       fetchData();
@@ -86,6 +155,11 @@ export default function RaceControlPage() {
   const racingHeats = heats.filter((h) => h.status === "racing");
   const finishedHeats = heats.filter((h) => h.status === "finished");
   const nextHeat = scheduledHeats[0];
+
+  // Preview: show who the finish input would match
+  const finishPreview = finishInput
+    ? participants.find((p) => p.startNumber === parseInt(finishInput))
+    : null;
 
   if (loading) {
     return (
@@ -126,6 +200,61 @@ export default function RaceControlPage() {
       </header>
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* FINISH INPUT - Always visible at top */}
+        <div className="bg-cfa-navy/80 border-2 border-cfa-green/30 rounded-xl p-6">
+          <h2 className="text-xl font-bold mb-3 text-cfa-green">
+            Finish registreren
+          </h2>
+          <form onSubmit={handleFinishByNumber} className="flex gap-3">
+            <div className="flex-1 relative">
+              <input
+                ref={finishInputRef}
+                type="number"
+                value={finishInput}
+                onChange={(e) => setFinishInput(e.target.value)}
+                className="w-full bg-black/40 border-2 border-cfa-green/30 rounded-xl px-6 py-4 text-white text-3xl font-mono text-center focus:border-cfa-green focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                placeholder="Startnummer"
+                autoFocus
+              />
+              {finishPreview && (
+                <div className="absolute -bottom-7 left-0 right-0 text-center">
+                  <span
+                    className={`text-sm ${
+                      finishPreview.status === "racing"
+                        ? "text-cfa-green"
+                        : finishPreview.status === "finished"
+                          ? "text-gray-500"
+                          : "text-cfa-yellow"
+                    }`}
+                  >
+                    {finishPreview.name}
+                    {finishPreview.partnerName &&
+                      ` & ${finishPreview.partnerName}`}{" "}
+                    — {finishPreview.status === "racing" ? "AAN HET RACEN" : finishPreview.status === "finished" ? "AL GEFINISHT" : "NOG NIET GESTART"}
+                  </span>
+                </div>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold text-xl px-10 py-4 rounded-xl transition-colors"
+            >
+              FINISH
+            </button>
+          </form>
+          {finishFeedback && (
+            <div
+              className={`mt-4 text-center text-lg font-bold py-2 rounded-lg ${
+                finishFeedback.type === "success"
+                  ? "bg-cfa-green/20 text-cfa-green"
+                  : "bg-red-500/20 text-red-400"
+              }`}
+            >
+              {finishFeedback.message}
+            </div>
+          )}
+        </div>
+
         {/* Next Heat to Start */}
         {nextHeat && (
           <div className="bg-cfa-navy/80 border-2 border-cfa-yellow/30 rounded-xl p-6 animate-pulse-glow">
@@ -154,7 +283,10 @@ export default function RaceControlPage() {
                     key={id}
                     className="bg-black/30 rounded-lg p-3 text-center"
                   >
-                    <div className="font-bold text-lg">
+                    <div className="text-cfa-yellow font-mono font-bold text-2xl mb-1">
+                      #{p.startNumber}
+                    </div>
+                    <div className="font-bold">
                       {p.name}
                       {p.partnerName && (
                         <span className="text-gray-400">
@@ -194,10 +326,7 @@ export default function RaceControlPage() {
                         {heat.startTime
                           ? new Date(heat.startTime).toLocaleTimeString(
                               "nl-NL",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
+                              { hour: "2-digit", minute: "2-digit" }
                             )
                           : "?"}
                       </span>
@@ -222,6 +351,9 @@ export default function RaceControlPage() {
                               : "bg-black/30 border border-white/10"
                           }`}
                         >
+                          <div className="text-cfa-yellow font-mono font-bold text-xl">
+                            #{p.startNumber}
+                          </div>
                           <div className="font-bold text-center">
                             {p.name}
                             {p.partnerName && (
@@ -243,10 +375,10 @@ export default function RaceControlPage() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => handleFinish(p.id)}
-                              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold px-6 py-3 rounded-lg transition-colors text-lg w-full"
+                              onClick={() => handleFinishClick(p.id)}
+                              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold px-6 py-2 rounded-lg transition-colors w-full"
                             >
-                              FINISH
+                              FINISH #{p.startNumber}
                             </button>
                           )}
                         </div>
@@ -284,6 +416,9 @@ export default function RaceControlPage() {
                     if (!p) return null;
                     return (
                       <div key={id} className="text-sm text-gray-400">
+                        <span className="text-cfa-yellow font-mono">
+                          #{p.startNumber}
+                        </span>{" "}
                         {p.name}
                         {p.partnerName && ` & ${p.partnerName}`}
                       </div>
@@ -300,7 +435,6 @@ export default function RaceControlPage() {
           </div>
         )}
 
-        {/* No heats */}
         {heats.length === 0 && (
           <div className="text-center py-20">
             <p className="text-xl text-gray-500 mb-4">Geen heats gevonden</p>

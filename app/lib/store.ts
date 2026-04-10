@@ -7,21 +7,41 @@ export async function getParticipants(): Promise<Participant[]> {
   const { data, error } = await supabase
     .from('hyrox_participants')
     .select('*')
-    .order('created_at', { ascending: true });
+    .order('start_number', { ascending: true });
 
   if (error) throw error;
   return (data || []).map(dbToParticipant);
 }
 
-export async function addParticipant(p: Omit<Participant, 'id' | 'status'>): Promise<Participant> {
+export async function getNextStartNumber(): Promise<number> {
+  const { data } = await supabase
+    .from('hyrox_participants')
+    .select('start_number')
+    .order('start_number', { ascending: false })
+    .limit(1);
+
+  if (data && data.length > 0 && data[0].start_number) {
+    return data[0].start_number + 1;
+  }
+  return 1;
+}
+
+export async function addParticipant(
+  p: Omit<Participant, 'id' | 'status' | 'startNumber'> & { startNumber?: number }
+): Promise<Participant> {
   const id = `p_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const startNumber = p.startNumber || (await getNextStartNumber());
+
   const row = {
     id,
+    start_number: startNumber,
     name: p.name,
     partner_name: p.partnerName || null,
     division: p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
+    email: p.email || null,
+    phone: p.phone || null,
     status: 'registered',
   };
 
@@ -36,15 +56,20 @@ export async function addParticipant(p: Omit<Participant, 'id' | 'status'>): Pro
 }
 
 export async function addParticipantsBulk(
-  items: Omit<Participant, 'id' | 'status'>[]
+  items: (Omit<Participant, 'id' | 'status' | 'startNumber'> & { startNumber?: number })[]
 ): Promise<void> {
+  let nextNum = await getNextStartNumber();
+
   const rows = items.map((p) => ({
     id: `p_${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${Math.random().toString(36).slice(2, 4)}`,
+    start_number: p.startNumber || nextNum++,
     name: p.name,
     partner_name: p.partnerName || null,
     division: p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
+    email: p.email || null,
+    phone: p.phone || null,
     status: 'registered',
   }));
 
@@ -67,6 +92,7 @@ export async function updateParticipant(
   if (updates.finishTime !== undefined) row.finish_time = updates.finishTime;
   if (updates.totalTime !== undefined) row.total_time = updates.totalTime;
   if (updates.status !== undefined) row.status = updates.status;
+  if (updates.startNumber !== undefined) row.start_number = updates.startNumber;
 
   const { error } = await supabase.from('hyrox_participants').update(row).eq('id', id);
   if (error) throw error;
@@ -82,6 +108,27 @@ export async function deleteAllParticipants(): Promise<void> {
   if (e1) throw e1;
   const { error: e2 } = await supabase.from('hyrox_heats').delete().neq('id', '');
   if (e2) throw e2;
+}
+
+// Find participant by start number
+export async function getParticipantByNumber(num: number): Promise<Participant | null> {
+  const { data, error } = await supabase
+    .from('hyrox_participants')
+    .select('*')
+    .eq('start_number', num)
+    .single();
+
+  if (error || !data) return null;
+  return dbToParticipant(data);
+}
+
+// Finish participant by start number
+export async function finishByNumber(num: number): Promise<Participant | null> {
+  const p = await getParticipantByNumber(num);
+  if (!p || p.status !== 'racing') return null;
+
+  await finishParticipant(p.id);
+  return p;
 }
 
 // ==================== HEATS ====================
@@ -128,14 +175,12 @@ export async function saveHeats(heats: Heat[]): Promise<void> {
 export async function startHeat(heatId: string): Promise<void> {
   const now = Date.now();
 
-  // Update heat
   const { error: e1 } = await supabase
     .from('hyrox_heats')
     .update({ status: 'racing', start_time: now })
     .eq('id', heatId);
   if (e1) throw e1;
 
-  // Update participants in this heat
   const { data: heat } = await supabase
     .from('hyrox_heats')
     .select('participant_ids')
@@ -153,7 +198,6 @@ export async function startHeat(heatId: string): Promise<void> {
 }
 
 export async function finishParticipant(participantId: string): Promise<void> {
-  // Get participant to calculate total time
   const { data: p } = await supabase
     .from('hyrox_participants')
     .select('*')
@@ -174,7 +218,6 @@ export async function finishParticipant(participantId: string): Promise<void> {
     })
     .eq('id', participantId);
 
-  // Check if all participants in heat are finished
   if (p.heat_id) {
     const { data: heat } = await supabase
       .from('hyrox_heats')
@@ -199,6 +242,101 @@ export async function finishParticipant(participantId: string): Promise<void> {
   }
 }
 
+// ==================== GOOGLE SHEETS SYNC ====================
+
+export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
+  added: number;
+  existing: number;
+  total: number;
+}> {
+  // Extract sheet ID from URL
+  const match = sheetUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) throw new Error('Ongeldige Google Sheets URL');
+  const sheetId = match[1];
+
+  // Fetch as CSV (sheet must be published or shared as "anyone with link")
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+  const res = await fetch(csvUrl);
+  const text = await res.text();
+
+  // Parse Google's JSON response (wrapped in google.visualization.Query.setResponse(...))
+  const jsonStr = text.replace(/^.*google\.visualization\.Query\.setResponse\(/, '').replace(/\);?\s*$/, '');
+  const json = JSON.parse(jsonStr);
+
+  const rows = json.table.rows as { c: ({ v: string | number | null } | null)[] }[];
+  const headers = json.table.cols as { label: string }[];
+
+  // Find column indices
+  const colMap: Record<string, number> = {};
+  headers.forEach((col, i) => {
+    const label = (col.label || '').toLowerCase().trim();
+    if (label.includes('ind') || label.includes('duo')) colMap.category = i;
+    if (label.includes('divisie')) colMap.division = i;
+    if (label.includes('naam')) colMap.name = i;
+    if (label.includes('telefoon')) colMap.phone = i;
+    if (label.includes('e-mail') || label.includes('email')) colMap.email = i;
+    if (label.includes('geschatte') || label.includes('eindtijd')) colMap.estimatedTime = i;
+  });
+
+  // If headers aren't labeled, use position (based on the screenshot)
+  if (colMap.category === undefined) colMap.category = 0;
+  if (colMap.division === undefined) colMap.division = 1;
+  if (colMap.name === undefined) colMap.name = 2;
+  if (colMap.phone === undefined) colMap.phone = 3;
+  if (colMap.email === undefined) colMap.email = 4;
+  if (colMap.estimatedTime === undefined) colMap.estimatedTime = 5;
+
+  // Get existing participants to avoid duplicates (match by name+email)
+  const existing = await getParticipants();
+  const existingKeys = new Set(
+    existing.map((p) => `${p.name.toLowerCase().trim()}`)
+  );
+
+  // Parse and import
+  const { parseEstimatedTime, mapSheetCategory, mapSheetDivision } = await import('./types');
+
+  const newParticipants: (Omit<Participant, 'id' | 'status' | 'startNumber'> & { startNumber?: number })[] = [];
+
+  for (const row of rows) {
+    const getVal = (col: number): string => {
+      const cell = row.c[col];
+      if (!cell || cell.v === null || cell.v === undefined) return '';
+      return String(cell.v).trim();
+    };
+
+    const name = getVal(colMap.name);
+    if (!name) continue;
+
+    // Skip if already exists
+    if (existingKeys.has(name.toLowerCase().trim())) continue;
+
+    const categoryRaw = getVal(colMap.category);
+    const divisionRaw = getVal(colMap.division);
+    const estimatedTimeRaw = getVal(colMap.estimatedTime);
+    const email = getVal(colMap.email);
+    const phone = getVal(colMap.phone);
+
+    newParticipants.push({
+      name,
+      division: mapSheetDivision(divisionRaw),
+      category: mapSheetCategory(categoryRaw),
+      estimatedTime: parseEstimatedTime(estimatedTimeRaw),
+      email: email || undefined,
+      phone: phone || undefined,
+    });
+  }
+
+  if (newParticipants.length > 0) {
+    await addParticipantsBulk(newParticipants);
+  }
+
+  return {
+    added: newParticipants.length,
+    existing: existing.length,
+    total: existing.length + newParticipants.length,
+  };
+}
+
 // ==================== SETTINGS ====================
 
 export async function getSettings() {
@@ -209,19 +347,26 @@ export async function getSettings() {
     .single();
 
   if (error || !data) {
-    return { startTimeBase: '09:00', heatInterval: 10 };
+    return { startTimeBase: '09:00', heatInterval: 10, sheetUrl: '' };
   }
 
   return {
     startTimeBase: data.start_time_base,
     heatInterval: data.heat_interval,
+    sheetUrl: data.sheet_url || '',
   };
 }
 
-export async function updateSettings(startTimeBase: string, heatInterval: number) {
+export async function updateSettings(startTimeBase: string, heatInterval: number, sheetUrl?: string) {
+  const updates: Record<string, unknown> = {
+    start_time_base: startTimeBase,
+    heat_interval: heatInterval,
+  };
+  if (sheetUrl !== undefined) updates.sheet_url = sheetUrl;
+
   await supabase
     .from('hyrox_settings')
-    .update({ start_time_base: startTimeBase, heat_interval: heatInterval })
+    .update(updates)
     .eq('id', 1);
 }
 
@@ -230,6 +375,7 @@ export async function updateSettings(startTimeBase: string, heatInterval: number
 function dbToParticipant(row: Record<string, unknown>): Participant {
   return {
     id: row.id as string,
+    startNumber: row.start_number as number,
     name: row.name as string,
     partnerName: (row.partner_name as string) || undefined,
     division: row.division as Participant['division'],
@@ -240,6 +386,8 @@ function dbToParticipant(row: Record<string, unknown>): Participant {
     finishTime: (row.finish_time as number) || undefined,
     totalTime: (row.total_time as number) || undefined,
     status: row.status as Participant['status'],
+    email: (row.email as string) || undefined,
+    phone: (row.phone as string) || undefined,
   };
 }
 

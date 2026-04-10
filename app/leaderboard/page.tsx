@@ -239,7 +239,10 @@ export default function LeaderboardPage() {
                   key={p.id}
                   className="bg-cfa-yellow/5 border border-cfa-yellow/20 rounded-lg px-4 py-2 flex items-center justify-between"
                 >
-                  <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-cfa-yellow font-mono font-bold">
+                      #{p.startNumber}
+                    </span>
                     <span className="font-medium">
                       {p.name}
                       {p.partnerName && (
@@ -250,7 +253,7 @@ export default function LeaderboardPage() {
                       )}
                     </span>
                     {filter === "all" && (
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500">
                         {DIVISION_LABELS[p.division]}
                       </span>
                     )}
@@ -280,7 +283,10 @@ export default function LeaderboardPage() {
                   {rank}
                 </div>
 
-                {/* Name & Category */}
+                {/* Number & Name */}
+                <div className="text-cfa-yellow font-mono font-bold text-lg w-12">
+                  #{p.startNumber}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-lg truncate">
                     {p.name}
