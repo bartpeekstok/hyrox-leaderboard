@@ -125,9 +125,13 @@ export default function LeaderboardPage() {
     .sort((a, b) => (b.finishTime || 0) - (a.finishTime || 0))
     .slice(0, 5);
 
-  const totalFinished = participants.filter((p) => p.status === "finished").length;
-  const totalRacing = participants.filter((p) => p.status === "racing").length;
-  const totalParticipants = participants.length;
+  const isDuo = (p: Participant) => p.category.startsWith("duo_");
+  const countPeople = (list: Participant[]) =>
+    list.reduce((sum, p) => sum + (isDuo(p) ? 2 : 1), 0);
+
+  const totalFinished = countPeople(participants.filter((p) => p.status === "finished"));
+  const totalRacing = countPeople(participants.filter((p) => p.status === "racing"));
+  const totalParticipants = countPeople(participants);
 
   const availableFilters = getAvailableFilters();
 

@@ -227,7 +227,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="bg-cfa-blue/30 text-cfa-yellow px-3 py-1 rounded-full text-sm font-semibold">
-              {participants.length} deelnemers
+              {participants.reduce((sum, p) => sum + (p.category.startsWith("duo_") ? 2 : 1), 0)} deelnemers
             </span>
             <span className="bg-cfa-blue/30 text-cfa-green px-3 py-1 rounded-full text-sm font-semibold">
               {heats.length} heats
