@@ -277,7 +277,10 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   headers.forEach((h, i) => {
     if (h === 'ind/duo' || (h.startsWith('ind') && !h.includes('eindtijd'))) colMap.category = i;
     if (h.includes('divisie')) colMap.division = i;
-    if (h === 'naam' || (h.includes('naam') && !h.includes('tijd'))) colMap.name = i;
+    if (h === 'naam' || (h === 'naam 2')) {
+      if (h === 'naam 2') colMap.partnerName = i;
+      else colMap.name = i;
+    }
     if (h.includes('telefoon')) colMap.phone = i;
     if (h.includes('e-mail') || h.includes('email')) colMap.email = i;
     if (h.includes('geschatte') || h.includes('eindtijd')) colMap.estimatedTime = i;
@@ -287,9 +290,10 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   if (colMap.category === undefined) colMap.category = 0;
   if (colMap.division === undefined) colMap.division = 1;
   if (colMap.name === undefined) colMap.name = 2;
-  if (colMap.phone === undefined) colMap.phone = 3;
-  if (colMap.email === undefined) colMap.email = 4;
-  if (colMap.estimatedTime === undefined) colMap.estimatedTime = 5;
+  if (colMap.partnerName === undefined) colMap.partnerName = 3;
+  if (colMap.phone === undefined) colMap.phone = 4;
+  if (colMap.email === undefined) colMap.email = 5;
+  if (colMap.estimatedTime === undefined) colMap.estimatedTime = 6;
 
   // Get existing participants to avoid duplicates
   const existing = await getParticipants();
@@ -309,8 +313,11 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
 
     if (existingKeys.has(name.toLowerCase().trim())) continue;
 
+    const partnerName = getVal(colMap.partnerName);
+
     newParticipants.push({
       name,
+      partnerName: partnerName || undefined,
       division: mapSheetDivision(getVal(colMap.division)),
       category: mapSheetCategory(getVal(colMap.category)),
       estimatedTime: parseEstimatedTime(getVal(colMap.estimatedTime)),
