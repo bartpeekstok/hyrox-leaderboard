@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cfa-navy: #1a1a2e;
+  --cfa-blue: #1e3a8a;
+  --cfa-blue-hover: #1e40af;
+  --cfa-dark: #111827;
+  --cfa-yellow: #f59e0b;
+  --cfa-yellow-hover: #d97706;
+  --cfa-green: #10b981;
+  --cfa-red: #ef4444;
+  --background: #0f0f1a;
+  --foreground: #f1f5f9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-cfa-navy: var(--cfa-navy);
+  --color-cfa-blue: var(--cfa-blue);
+  --color-cfa-blue-hover: var(--cfa-blue-hover);
+  --color-cfa-dark: var(--cfa-dark);
+  --color-cfa-yellow: var(--cfa-yellow);
+  --color-cfa-yellow-hover: var(--cfa-yellow-hover);
+  --color-cfa-green: var(--cfa-green);
+  --color-cfa-red: var(--cfa-red);
+  --font-sans: "Inter", system-ui, sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Leaderboard animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Scrollbar styling for leaderboard */
+.leaderboard-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
