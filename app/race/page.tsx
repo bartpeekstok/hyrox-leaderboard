@@ -289,7 +289,7 @@ export default function RaceControlPage() {
                     <div className="font-bold">
                       {p.name}
                       {p.partnerName && (
-                        <span className="text-gray-400">
+                        <span>
                           {" "}
                           & {p.partnerName}
                         </span>
@@ -357,7 +357,7 @@ export default function RaceControlPage() {
                           <div className="font-bold text-center">
                             {p.name}
                             {p.partnerName && (
-                              <span className="text-gray-400">
+                              <span>
                                 {" "}
                                 & {p.partnerName}
                               </span>

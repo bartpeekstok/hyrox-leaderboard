@@ -554,7 +554,7 @@ export default function AdminPage() {
                               <span className="text-sm font-medium">
                                 {p.name}
                                 {p.partnerName && (
-                                  <span className="text-gray-400">
+                                  <span>
                                     {" "}
                                     & {p.partnerName}
                                   </span>
