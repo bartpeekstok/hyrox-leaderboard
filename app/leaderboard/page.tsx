@@ -162,7 +162,7 @@ export default function LeaderboardPage() {
             alt="CrossFit Alkmaar"
             width={140}
             height={56}
-            className="invert hue-rotate-180 saturate-200 brightness-110"
+            className="invert saturate-200"
           />
           <div className="h-8 w-px bg-white/20" />
           <div>

@@ -218,7 +218,7 @@ export default function AdminPage() {
                 alt="CrossFit Alkmaar"
                 width={120}
                 height={48}
-                className="invert hue-rotate-180 saturate-200 brightness-110"
+                className="invert saturate-200"
               />
             </Link>
             <div>
