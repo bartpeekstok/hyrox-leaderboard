@@ -10,6 +10,13 @@ import {
   DIVISION_LABELS,
   formatTime,
 } from "../lib/types";
+import {
+  getParticipants,
+  getHeats,
+  startHeat as startHeatDb,
+  finishParticipant as finishParticipantDb,
+} from "../lib/store";
+import { supabase } from "../lib/supabase";
 
 export default function RaceControlPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -18,17 +25,37 @@ export default function RaceControlPage() {
   const [now, setNow] = useState(Date.now());
 
   const fetchData = useCallback(async () => {
-    const res = await fetch("/api/race");
-    const data = await res.json();
-    setParticipants(data.participants || []);
-    setHeats(data.heats || []);
+    try {
+      const [p, h] = await Promise.all([getParticipants(), getHeats()]);
+      setParticipants(p);
+      setHeats(h);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000);
-    return () => clearInterval(interval);
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel("race-control")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "hyrox_participants" },
+        () => fetchData()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "hyrox_heats" },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchData]);
 
   // Update clock every second for live timers
@@ -38,21 +65,21 @@ export default function RaceControlPage() {
   }, []);
 
   async function handleStartHeat(heatId: string) {
-    await fetch("/api/race", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "start_heat", heatId }),
-    });
-    fetchData();
+    try {
+      await startHeatDb(heatId);
+      fetchData();
+    } catch (err) {
+      console.error("Error starting heat:", err);
+    }
   }
 
   async function handleFinish(participantId: string) {
-    await fetch("/api/race", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "finish_participant", participantId }),
-    });
-    fetchData();
+    try {
+      await finishParticipantDb(participantId);
+      fetchData();
+    } catch (err) {
+      console.error("Error finishing participant:", err);
+    }
   }
 
   const scheduledHeats = heats.filter((h) => h.status === "scheduled");
@@ -75,7 +102,13 @@ export default function RaceControlPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/">
-              <Image src="/logo.png" alt="CrossFit Alkmaar" width={120} height={48} className="invert" />
+              <Image
+                src="/logo.png"
+                alt="CrossFit Alkmaar"
+                width={120}
+                height={48}
+                className="invert"
+              />
             </Link>
             <div>
               <h1 className="text-xl font-bold">Race Control</h1>
@@ -125,11 +158,15 @@ export default function RaceControlPage() {
                     <div className="font-bold text-lg">
                       {p.name}
                       {p.partnerName && (
-                        <span className="text-gray-400"> & {p.partnerName}</span>
+                        <span className="text-gray-400">
+                          {" "}
+                          & {p.partnerName}
+                        </span>
                       )}
                     </div>
                     <div className="text-sm text-gray-400">
-                      {DIVISION_LABELS[p.division]} - {CATEGORY_LABELS[p.category]}
+                      {DIVISION_LABELS[p.division]} -{" "}
+                      {CATEGORY_LABELS[p.category]}
                     </div>
                   </div>
                 );
@@ -156,10 +193,13 @@ export default function RaceControlPage() {
                       <span className="text-gray-400 text-sm">
                         gestart om{" "}
                         {heat.startTime
-                          ? new Date(heat.startTime).toLocaleTimeString("nl-NL", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
+                          ? new Date(heat.startTime).toLocaleTimeString(
+                              "nl-NL",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )
                           : "?"}
                       </span>
                     </h3>
@@ -198,7 +238,9 @@ export default function RaceControlPage() {
                           </div>
                           {isFinished ? (
                             <div className="text-cfa-green font-mono font-bold text-lg">
-                              {p.totalTime ? formatTime(p.totalTime) : "FINISHED"}
+                              {p.totalTime
+                                ? formatTime(p.totalTime)
+                                : "FINISHED"}
                             </div>
                           ) : (
                             <button
@@ -231,8 +273,12 @@ export default function RaceControlPage() {
                   className="bg-cfa-navy/40 border border-white/5 rounded-lg p-3"
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-sm">Heat {heat.heatNumber}</span>
-                    <span className="text-xs text-gray-500">{heat.scheduledTime}</span>
+                    <span className="font-bold text-sm">
+                      Heat {heat.heatNumber}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {heat.scheduledTime}
+                    </span>
                   </div>
                   {heat.participantIds.map((id) => {
                     const p = participants.find((pp) => pp.id === id);
@@ -258,13 +304,8 @@ export default function RaceControlPage() {
         {/* No heats */}
         {heats.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-xl text-gray-500 mb-4">
-              Geen heats gevonden
-            </p>
-            <Link
-              href="/admin"
-              className="text-cfa-yellow hover:underline"
-            >
+            <p className="text-xl text-gray-500 mb-4">Geen heats gevonden</p>
+            <Link href="/admin" className="text-cfa-yellow hover:underline">
               Ga naar Admin om heats te genereren
             </Link>
           </div>

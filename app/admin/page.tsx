@@ -11,6 +11,19 @@ import {
   DIVISION_LABELS,
   Heat,
 } from "../lib/types";
+import { generateHeats } from "../lib/heat-scheduler";
+import {
+  getParticipants,
+  addParticipant,
+  addParticipantsBulk,
+  updateParticipant,
+  deleteParticipant,
+  deleteAllParticipants,
+  getHeats,
+  saveHeats,
+  getSettings,
+  updateSettings,
+} from "../lib/store";
 
 export default function AdminPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -36,12 +49,19 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const res = await fetch("/api/heats");
-    const data = await res.json();
-    setParticipants(data.participants || []);
-    setHeats(data.heats || []);
-    if (data.startTimeBase) setStartTime(data.startTimeBase);
-    if (data.heatInterval) setHeatInterval(data.heatInterval);
+    try {
+      const [p, h, s] = await Promise.all([
+        getParticipants(),
+        getHeats(),
+        getSettings(),
+      ]);
+      setParticipants(p);
+      setHeats(h);
+      setStartTime(s.startTimeBase);
+      setHeatInterval(s.heatInterval);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
     setLoading(false);
   }, []);
 
@@ -55,47 +75,42 @@ export default function AdminPage() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    if (editingId) {
-      await fetch("/api/participants", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingId,
+    try {
+      if (editingId) {
+        await updateParticipant(editingId, {
           name: name.trim(),
           partnerName: isDuo ? partnerName.trim() : undefined,
           division,
           category,
           estimatedTime,
-        }),
-      });
-      setEditingId(null);
-    } else {
-      await fetch("/api/participants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        });
+        setEditingId(null);
+      } else {
+        await addParticipant({
           name: name.trim(),
           partnerName: isDuo ? partnerName.trim() : undefined,
           division,
           category,
           estimatedTime,
-        }),
-      });
+        });
+      }
+      setName("");
+      setPartnerName("");
+      fetchData();
+    } catch (err) {
+      console.error("Error saving participant:", err);
     }
-
-    setName("");
-    setPartnerName("");
-    fetchData();
   }
 
   async function handleDelete(id: string) {
-    await fetch(`/api/participants?id=${id}`, { method: "DELETE" });
+    await deleteParticipant(id);
     fetchData();
   }
 
   async function handleDeleteAll() {
-    if (!confirm("Weet je zeker dat je ALLE deelnemers wilt verwijderen?")) return;
-    await fetch("/api/participants?id=all", { method: "DELETE" });
+    if (!confirm("Weet je zeker dat je ALLE deelnemers wilt verwijderen?"))
+      return;
+    await deleteAllParticipants();
     fetchData();
   }
 
@@ -109,19 +124,13 @@ export default function AdminPage() {
   }
 
   async function handleGenerateHeats() {
-    const res = await fetch("/api/heats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startTimeBase: startTime, heatInterval }),
-    });
-    const data = await res.json();
-    setHeats(data.heats || []);
-    setParticipants(data.participants || []);
+    await updateSettings(startTime, heatInterval);
+    const newHeats = generateHeats(participants, startTime, heatInterval);
+    await saveHeats(newHeats);
+    fetchData();
   }
 
   async function handleBulkImport() {
-    // Format: name,division,category,estimatedTime (one per line)
-    // For duos: name,partnerName,division,category,estimatedTime
     const lines = bulkText.trim().split("\n").filter(Boolean);
     const items = lines.map((line) => {
       const parts = line.split(",").map((s) => s.trim());
@@ -129,25 +138,20 @@ export default function AdminPage() {
         return {
           name: parts[0],
           partnerName: parts[1],
-          division: parts[2],
-          category: parts[3],
+          division: parts[2] as Division,
+          category: parts[3] as Category,
           estimatedTime: parseInt(parts[4]),
         };
       }
       return {
         name: parts[0],
-        division: parts[1],
-        category: parts[2],
+        division: parts[1] as Division,
+        category: parts[2] as Category,
         estimatedTime: parseInt(parts[3]),
       };
     });
 
-    await fetch("/api/participants", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(items),
-    });
-
+    await addParticipantsBulk(items);
     setBulkText("");
     setShowBulk(false);
     fetchData();
@@ -178,7 +182,13 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/">
-              <Image src="/logo.png" alt="CrossFit Alkmaar" width={120} height={48} className="invert" />
+              <Image
+                src="/logo.png"
+                alt="CrossFit Alkmaar"
+                width={120}
+                height={48}
+                className="invert"
+              />
             </Link>
             <div>
               <h1 className="text-xl font-bold">Admin Panel</h1>
@@ -205,7 +215,9 @@ export default function AdminPage() {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Naam</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Naam
+                </label>
                 <input
                   type="text"
                   value={name}
@@ -218,7 +230,9 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Divisie</label>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Divisie
+                  </label>
                   <select
                     value={division}
                     onChange={(e) => setDivision(e.target.value as Division)}
@@ -232,7 +246,9 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Categorie</label>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Categorie
+                  </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as Category)}
@@ -249,7 +265,9 @@ export default function AdminPage() {
 
               {isDuo && (
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Partner naam</label>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Partner naam
+                  </label>
                   <input
                     type="text"
                     value={partnerName}
@@ -267,7 +285,9 @@ export default function AdminPage() {
                 <input
                   type="number"
                   value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(parseInt(e.target.value) || 60)}
+                  onChange={(e) =>
+                    setEstimatedTime(parseInt(e.target.value) || 60)
+                  }
                   className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   min={20}
                   max={180}
@@ -319,7 +339,9 @@ export default function AdminPage() {
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
                   className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-mono h-32 focus:border-cfa-yellow focus:outline-none"
-                  placeholder="Jan Jansen,open,single_men,65&#10;Lisa de Vries,pro,single_women,55"
+                  placeholder={
+                    "Jan Jansen,open,single_men,65\nLisa de Vries,pro,single_women,55"
+                  }
                 />
                 <button
                   onClick={handleBulkImport}
@@ -336,7 +358,9 @@ export default function AdminPage() {
             <h2 className="text-lg font-bold mb-4">Heat Instellingen</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Eerste heat start om</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Eerste heat start om
+                </label>
                 <input
                   type="time"
                   value={startTime}
@@ -351,7 +375,9 @@ export default function AdminPage() {
                 <input
                   type="number"
                   value={heatInterval}
-                  onChange={(e) => setHeatInterval(parseInt(e.target.value) || 10)}
+                  onChange={(e) =>
+                    setHeatInterval(parseInt(e.target.value) || 10)
+                  }
                   className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   min={3}
                   max={30}
@@ -368,7 +394,9 @@ export default function AdminPage() {
 
           {/* Danger zone */}
           <div className="bg-red-950/30 border border-red-500/20 rounded-xl p-6">
-            <h3 className="text-sm font-bold text-red-400 mb-3">Danger Zone</h3>
+            <h3 className="text-sm font-bold text-red-400 mb-3">
+              Danger Zone
+            </h3>
             <button
               onClick={handleDeleteAll}
               className="w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 font-semibold py-2 rounded-lg transition-colors text-sm border border-red-500/30"
@@ -383,13 +411,17 @@ export default function AdminPage() {
           {/* Category summary */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
-              const count = participants.filter((p) => p.category === key).length;
+              const count = participants.filter(
+                (p) => p.category === key
+              ).length;
               return (
                 <div
                   key={key}
                   className="bg-cfa-navy/60 border border-white/10 rounded-lg p-3 text-center"
                 >
-                  <div className="text-2xl font-bold text-cfa-yellow">{count}</div>
+                  <div className="text-2xl font-bold text-cfa-yellow">
+                    {count}
+                  </div>
                   <div className="text-xs text-gray-400">{label}</div>
                 </div>
               );
@@ -413,11 +445,18 @@ export default function AdminPage() {
                       className="bg-black/20 border border-white/5 rounded-lg p-3"
                     >
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-bold text-sm">Heat {heat.heatNumber}</span>
-                        <span className="text-xs text-cfa-yellow">{heat.scheduledTime}</span>
+                        <span className="font-bold text-sm">
+                          Heat {heat.heatNumber}
+                        </span>
+                        <span className="text-xs text-cfa-yellow">
+                          {heat.scheduledTime}
+                        </span>
                       </div>
                       {heatParticipants.map((p) => (
-                        <div key={p.id} className="text-sm text-gray-300 flex justify-between">
+                        <div
+                          key={p.id}
+                          className="text-sm text-gray-300 flex justify-between"
+                        >
                           <span>
                             {p.name}
                             {p.partnerName && ` & ${p.partnerName}`}
@@ -460,14 +499,20 @@ export default function AdminPage() {
                               <span className="text-sm font-medium">
                                 {p.name}
                                 {p.partnerName && (
-                                  <span className="text-gray-400"> & {p.partnerName}</span>
+                                  <span className="text-gray-400">
+                                    {" "}
+                                    & {p.partnerName}
+                                  </span>
                                 )}
                               </span>
-                              <span className="text-xs text-gray-500">~{p.estimatedTime}m</span>
+                              <span className="text-xs text-gray-500">
+                                ~{p.estimatedTime}m
+                              </span>
                               {p.heatId && (
                                 <span className="text-xs bg-cfa-blue/30 text-cfa-yellow px-2 py-0.5 rounded">
                                   Heat{" "}
-                                  {heats.find((h) => h.id === p.heatId)?.heatNumber || "?"}
+                                  {heats.find((h) => h.id === p.heatId)
+                                    ?.heatNumber || "?"}
                                 </span>
                               )}
                             </div>

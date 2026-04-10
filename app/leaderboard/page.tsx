@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import {
   Participant,
@@ -10,6 +10,8 @@ import {
   DIVISION_LABELS,
   formatTime,
 } from "../lib/types";
+import { getParticipants } from "../lib/store";
+import { supabase } from "../lib/supabase";
 
 type FilterKey = "all" | `${Division}_${Category}`;
 
@@ -19,18 +21,34 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [autoRotate, setAutoRotate] = useState(false);
+  const filtersRef = useRef<FilterKey[]>(["all"]);
 
   const fetchData = useCallback(async () => {
-    const res = await fetch("/api/race");
-    const data = await res.json();
-    setParticipants(data.participants || []);
+    try {
+      const p = await getParticipants();
+      setParticipants(p);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 2000);
-    return () => clearInterval(interval);
+
+    // Subscribe to realtime changes for instant leaderboard updates
+    const channel = supabase
+      .channel("leaderboard")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "hyrox_participants" },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchData]);
 
   useEffect(() => {
@@ -38,13 +56,18 @@ export default function LeaderboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Update available filters ref
+  useEffect(() => {
+    filtersRef.current = getAvailableFilters();
+  }, [participants]);
+
   // Auto-rotate through categories
   useEffect(() => {
     if (!autoRotate) return;
-    const filters = getAvailableFilters();
-    if (filters.length <= 1) return;
 
     const interval = setInterval(() => {
+      const filters = filtersRef.current;
+      if (filters.length <= 1) return;
       setFilter((current) => {
         const idx = filters.indexOf(current);
         return filters[(idx + 1) % filters.length];
@@ -52,7 +75,7 @@ export default function LeaderboardPage() {
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [autoRotate, participants]);
+  }, [autoRotate]);
 
   function getAvailableFilters(): FilterKey[] {
     const filters: FilterKey[] = ["all"];
@@ -89,10 +112,10 @@ export default function LeaderboardPage() {
   const availableFilters = getAvailableFilters();
 
   function getFilterLabel(f: FilterKey): string {
-    if (f === "all") return "Alle categorieën";
+    if (f === "all") return "Alle";
     const [div, ...catParts] = f.split("_");
     const cat = catParts.join("_") as Category;
-    return `${DIVISION_LABELS[div as Division]} - ${CATEGORY_LABELS[cat] || cat}`;
+    return `${DIVISION_LABELS[div as Division]} ${CATEGORY_LABELS[cat] || cat}`;
   }
 
   function getMedalColor(rank: number): string {
@@ -221,7 +244,10 @@ export default function LeaderboardPage() {
                     <span className="font-medium">
                       {p.name}
                       {p.partnerName && (
-                        <span className="text-gray-400"> & {p.partnerName}</span>
+                        <span className="text-gray-400">
+                          {" "}
+                          & {p.partnerName}
+                        </span>
                       )}
                     </span>
                     {filter === "all" && (
@@ -268,7 +294,8 @@ export default function LeaderboardPage() {
                   </div>
                   {filter === "all" && (
                     <div className="text-xs text-gray-500">
-                      {DIVISION_LABELS[p.division]} - {CATEGORY_LABELS[p.category]}
+                      {DIVISION_LABELS[p.division]} -{" "}
+                      {CATEGORY_LABELS[p.category]}
                     </div>
                   )}
                 </div>
@@ -282,30 +309,38 @@ export default function LeaderboardPage() {
                   >
                     {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                   </div>
-                  {rank > 1 && finishedParticipants[0].totalTime && p.totalTime && (
-                    <div className="text-xs text-gray-500 font-mono">
-                      +{formatTime(p.totalTime - finishedParticipants[0].totalTime)}
-                    </div>
-                  )}
+                  {rank > 1 &&
+                    finishedParticipants[0].totalTime &&
+                    p.totalTime && (
+                      <div className="text-xs text-gray-500 font-mono">
+                        +
+                        {formatTime(
+                          p.totalTime - finishedParticipants[0].totalTime
+                        )}
+                      </div>
+                    )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {finishedParticipants.length === 0 && racingParticipants.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">&#127939;</div>
-            <p className="text-xl text-gray-500">
-              Wachten op de eerste finishers...
-            </p>
-          </div>
-        )}
+        {finishedParticipants.length === 0 &&
+          racingParticipants.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">&#127939;</div>
+              <p className="text-xl text-gray-500">
+                Wachten op de eerste finishers...
+              </p>
+            </div>
+          )}
       </div>
 
       {/* Footer ticker */}
       <footer className="bg-cfa-navy/90 border-t border-white/10 px-6 py-2 flex items-center justify-between text-sm text-gray-500">
-        <span>HYROX Race Simulation - CrossFit Alkmaar - 30 mei 2026</span>
+        <span>
+          HYROX Race Simulation - CrossFit Alkmaar - 30 mei 2026
+        </span>
         <span className="font-mono">
           {new Date().toLocaleTimeString("nl-NL", {
             hour: "2-digit",
