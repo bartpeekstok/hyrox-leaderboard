@@ -103,11 +103,10 @@ export default function RaceControlPage() {
           <div className="flex items-center gap-4">
             <Link href="/">
               <Image
-                src="/logo.png"
+                src="/logo-hyrox.svg"
                 alt="CrossFit Alkmaar"
-                width={120}
-                height={48}
-                className="invert"
+                width={140}
+                height={56}
               />
             </Link>
             <div>

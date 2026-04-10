@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" fill="none">
+  <!-- Left laurel wreath -->
+  <g fill="#f59e0b">
+    <!-- Left branch leaves -->
+    <ellipse cx="68" cy="160" rx="12" ry="5" transform="rotate(-30 68 160)"/>
+    <ellipse cx="58" cy="145" rx="12" ry="5" transform="rotate(-20 58 145)"/>
+    <ellipse cx="52" cy="128" rx="12" ry="5" transform="rotate(-10 52 128)"/>
+    <ellipse cx="50" cy="110" rx="12" ry="5" transform="rotate(0 50 110)"/>
+    <ellipse cx="52" cy="92" rx="12" ry="5" transform="rotate(10 52 92)"/>
+    <ellipse cx="58" cy="75" rx="12" ry="5" transform="rotate(20 58 75)"/>
+    <ellipse cx="68" cy="60" rx="12" ry="5" transform="rotate(30 68 60)"/>
+    <!-- Left inner leaves -->
+    <ellipse cx="80" cy="155" rx="10" ry="4" transform="rotate(-45 80 155)"/>
+    <ellipse cx="72" cy="140" rx="10" ry="4" transform="rotate(-35 72 140)"/>
+    <ellipse cx="66" cy="123" rx="10" ry="4" transform="rotate(-20 66 123)"/>
+    <ellipse cx="64" cy="105" rx="10" ry="4" transform="rotate(-5 64 105)"/>
+    <ellipse cx="66" cy="87" rx="10" ry="4" transform="rotate(10 66 87)"/>
+    <ellipse cx="72" cy="72" rx="10" ry="4" transform="rotate(25 72 72)"/>
+    <ellipse cx="80" cy="58" rx="10" ry="4" transform="rotate(40 80 58)"/>
+    <!-- Left stem -->
+    <path d="M85 170 Q45 110 85 45" stroke="#f59e0b" stroke-width="3" fill="none"/>
+  </g>
+
+  <!-- Right laurel wreath -->
+  <g fill="#f59e0b">
+    <!-- Right branch leaves -->
+    <ellipse cx="332" cy="160" rx="12" ry="5" transform="rotate(30 332 160)"/>
+    <ellipse cx="342" cy="145" rx="12" ry="5" transform="rotate(20 342 145)"/>
+    <ellipse cx="348" cy="128" rx="12" ry="5" transform="rotate(10 348 128)"/>
+    <ellipse cx="350" cy="110" rx="12" ry="5" transform="rotate(0 350 110)"/>
+    <ellipse cx="348" cy="92" rx="12" ry="5" transform="rotate(-10 348 92)"/>
+    <ellipse cx="342" cy="75" rx="12" ry="5" transform="rotate(-20 342 75)"/>
+    <ellipse cx="332" cy="60" rx="12" ry="5" transform="rotate(-30 332 60)"/>
+    <!-- Right inner leaves -->
+    <ellipse cx="320" cy="155" rx="10" ry="4" transform="rotate(45 320 155)"/>
+    <ellipse cx="328" cy="140" rx="10" ry="4" transform="rotate(35 328 140)"/>
+    <ellipse cx="334" cy="123" rx="10" ry="4" transform="rotate(20 334 123)"/>
+    <ellipse cx="336" cy="105" rx="10" ry="4" transform="rotate(5 336 105)"/>
+    <ellipse cx="334" cy="87" rx="10" ry="4" transform="rotate(-10 334 87)"/>
+    <ellipse cx="328" cy="72" rx="10" ry="4" transform="rotate(-25 328 72)"/>
+    <ellipse cx="320" cy="58" rx="10" ry="4" transform="rotate(-40 320 58)"/>
+    <!-- Right stem -->
+    <path d="M315 170 Q355 110 315 45" stroke="#f59e0b" stroke-width="3" fill="none"/>
+  </g>
+
+  <!-- Horizontal lines -->
+  <rect x="90" y="72" width="220" height="4" fill="#ffffff" opacity="0.5"/>
+  <rect x="90" y="138" width="220" height="4" fill="#ffffff" opacity="0.5"/>
+
+  <!-- CROSSFIT text -->
+  <text x="200" y="108" text-anchor="middle" font-family="'Impact', 'Arial Black', sans-serif" font-size="42" font-weight="900" fill="#ffffff" letter-spacing="4">CROSSFIT</text>
+
+  <!-- ALKMAAR text -->
+  <text x="200" y="135" text-anchor="middle" font-family="'Impact', 'Arial Black', sans-serif" font-size="30" font-weight="900" fill="#ffffff" letter-spacing="6">ALKMAAR</text>
+</svg>
