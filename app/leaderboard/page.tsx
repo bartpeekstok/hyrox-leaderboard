@@ -20,8 +20,9 @@ export default function LeaderboardPage() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
-  const [autoRotate, setAutoRotate] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true); // ON by default for TV
   const filtersRef = useRef<FilterKey[]>(["all"]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -36,7 +37,6 @@ export default function LeaderboardPage() {
   useEffect(() => {
     fetchData();
 
-    // Subscribe to realtime changes for instant leaderboard updates
     const channel = supabase
       .channel("leaderboard")
       .on(
@@ -56,12 +56,11 @@ export default function LeaderboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update available filters ref
   useEffect(() => {
     filtersRef.current = getAvailableFilters();
   }, [participants]);
 
-  // Auto-rotate through categories
+  // Auto-rotate through categories (skip "all" for TV - show each category)
   useEffect(() => {
     if (!autoRotate) return;
 
@@ -72,10 +71,20 @@ export default function LeaderboardPage() {
         const idx = filters.indexOf(current);
         return filters[(idx + 1) % filters.length];
       });
-    }, 8000);
+    }, 10000); // 10 seconds per category
 
     return () => clearInterval(interval);
   }, [autoRotate]);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }
 
   function getAvailableFilters(): FilterKey[] {
     const filters: FilterKey[] = ["all"];
@@ -109,10 +118,20 @@ export default function LeaderboardPage() {
       return p.division === div && p.category === cat;
     });
 
+  // Recent finishes across ALL categories (for ticker)
+  const recentFinishes = participants
+    .filter((p) => p.status === "finished" && p.finishTime)
+    .sort((a, b) => (b.finishTime || 0) - (a.finishTime || 0))
+    .slice(0, 5);
+
+  const totalFinished = participants.filter((p) => p.status === "finished").length;
+  const totalRacing = participants.filter((p) => p.status === "racing").length;
+  const totalParticipants = participants.length;
+
   const availableFilters = getAvailableFilters();
 
   function getFilterLabel(f: FilterKey): string {
-    if (f === "all") return "Alle";
+    if (f === "all") return "Alle categorieën";
     const [div, ...catParts] = f.split("_");
     const cat = catParts.join("_") as Category;
     return `${DIVISION_LABELS[div as Division]} ${CATEGORY_LABELS[cat] || cat}`;
@@ -120,27 +139,19 @@ export default function LeaderboardPage() {
 
   function getMedalColor(rank: number): string {
     switch (rank) {
-      case 1:
-        return "text-yellow-400";
-      case 2:
-        return "text-gray-300";
-      case 3:
-        return "text-amber-600";
-      default:
-        return "text-gray-500";
+      case 1: return "text-yellow-400";
+      case 2: return "text-gray-300";
+      case 3: return "text-amber-600";
+      default: return "text-gray-500";
     }
   }
 
   function getMedalBg(rank: number): string {
     switch (rank) {
-      case 1:
-        return "bg-yellow-400/10 border-yellow-400/30";
-      case 2:
-        return "bg-gray-300/10 border-gray-300/20";
-      case 3:
-        return "bg-amber-600/10 border-amber-600/20";
-      default:
-        return "bg-white/5 border-white/5";
+      case 1: return "bg-yellow-400/10 border-yellow-400/30";
+      case 2: return "bg-gray-300/10 border-gray-300/20";
+      case 3: return "bg-amber-600/10 border-amber-600/20";
+      default: return "bg-white/5 border-white/5";
     }
   }
 
@@ -155,110 +166,118 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="bg-cfa-navy/90 border-b border-white/10 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="bg-cfa-navy/90 border-b border-white/10 px-8 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-5">
           <Image
             src="/logo-hyrox.png"
             alt="CrossFit Alkmaar"
-            width={140}
-            height={70}
+            width={160}
+            height={80}
           />
-          <div className="h-8 w-px bg-white/20" />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              HYROX <span className="text-cfa-yellow">LEADERBOARD</span>
-            </h1>
-          </div>
+          <div className="h-10 w-px bg-white/20" />
+          <h1 className="text-3xl font-bold tracking-tight">
+            HYROX <span className="text-cfa-yellow">LEADERBOARD</span>
+          </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-3xl font-mono font-bold text-cfa-yellow">
-              {finishedParticipants.length}
+        <div className="flex items-center gap-6">
+          <div className="text-center">
+            <div className="text-4xl font-mono font-bold text-cfa-green">
+              {totalRacing}
+            </div>
+            <div className="text-xs text-gray-400 uppercase tracking-wider">
+              onderweg
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-mono font-bold text-cfa-yellow">
+              {totalFinished}
             </div>
             <div className="text-xs text-gray-400 uppercase tracking-wider">
               gefinisht
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-mono font-bold text-cfa-green">
-              {racingParticipants.length}
+          <div className="text-center">
+            <div className="text-4xl font-mono font-bold text-white/40">
+              {totalParticipants}
             </div>
             <div className="text-xs text-gray-400 uppercase tracking-wider">
-              racing
+              totaal
             </div>
           </div>
         </div>
       </header>
 
-      {/* Filter tabs */}
-      <div className="bg-cfa-navy/50 px-6 py-2 flex items-center gap-2 overflow-x-auto">
-        {availableFilters.map((f) => (
-          <button
-            key={f}
-            onClick={() => {
-              setFilter(f);
-              setAutoRotate(false);
-            }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === f
-                ? "bg-cfa-yellow text-black"
-                : "bg-white/5 text-gray-400 hover:bg-white/10"
-            }`}
-          >
-            {getFilterLabel(f)}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <button
-          onClick={() => setAutoRotate(!autoRotate)}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            autoRotate
-              ? "bg-cfa-green/20 text-cfa-green"
-              : "bg-white/5 text-gray-500 hover:bg-white/10"
-          }`}
-        >
-          Auto-rotatie {autoRotate ? "AAN" : "UIT"}
-        </button>
-      </div>
-
-      {/* Current filter label */}
-      <div className="px-6 pt-4 pb-2">
-        <h2 className="text-lg font-bold text-cfa-yellow uppercase tracking-wider">
+      {/* Category title bar with dots indicator */}
+      <div className="bg-cfa-navy/60 px-8 py-3 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-cfa-yellow uppercase tracking-wider">
           {getFilterLabel(filter)}
         </h2>
+        <div className="flex items-center gap-3">
+          {/* Category dots */}
+          <div className="flex gap-1.5">
+            {availableFilters.map((f) => (
+              <button
+                key={f}
+                onClick={() => {
+                  setFilter(f);
+                  setAutoRotate(false);
+                }}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  filter === f
+                    ? "bg-cfa-yellow scale-125"
+                    : "bg-white/20 hover:bg-white/40"
+                }`}
+                title={getFilterLabel(f)}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setAutoRotate(!autoRotate)}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              autoRotate
+                ? "bg-cfa-green/20 text-cfa-green"
+                : "bg-white/5 text-gray-500 hover:bg-white/10"
+            }`}
+          >
+            Auto {autoRotate ? "AAN" : "UIT"}
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-gray-400 hover:bg-white/10 transition-colors"
+          >
+            {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          </button>
+        </div>
       </div>
 
-      {/* Leaderboard */}
-      <div className="flex-1 px-6 pb-6 leaderboard-scroll overflow-y-auto">
+      {/* Leaderboard content */}
+      <div className="flex-1 px-8 py-4 leaderboard-scroll overflow-y-auto">
         {/* Currently Racing */}
         {racingParticipants.length > 0 && (
-          <div className="mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="mb-5">
+            <div className="text-sm text-cfa-green font-semibold uppercase tracking-wider mb-2">
+              Onderweg ({racingParticipants.length})
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
               {racingParticipants.map((p) => (
                 <div
                   key={p.id}
                   className="bg-cfa-yellow/5 border border-cfa-yellow/20 rounded-lg px-4 py-2 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-cfa-yellow font-mono font-bold">
+                    <span className="text-cfa-yellow font-mono font-bold text-lg">
                       #{p.startNumber}
                     </span>
-                    <span className="font-medium">
+                    <span className="font-medium truncate">
                       {p.name}
                       {p.partnerName && (
                         <span className="text-gray-400">
-                          {" "}
-                          & {p.partnerName}
+                          {" "}& {p.partnerName}
                         </span>
                       )}
                     </span>
-                    {filter === "all" && (
-                      <span className="text-xs text-gray-500">
-                        {DIVISION_LABELS[p.division]}
-                      </span>
-                    )}
                   </div>
-                  <span className="font-mono text-cfa-yellow text-sm">
+                  <span className="font-mono text-cfa-yellow text-lg ml-2">
                     {p.startTime ? formatTime(now - p.startTime) : "--:--"}
                   </span>
                 </div>
@@ -268,39 +287,39 @@ export default function LeaderboardPage() {
         )}
 
         {/* Finished Rankings */}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {finishedParticipants.map((p, index) => {
             const rank = index + 1;
             return (
               <div
                 key={p.id}
-                className={`${getMedalBg(rank)} border rounded-lg px-4 py-3 flex items-center gap-4 animate-slide-in`}
+                className={`${getMedalBg(rank)} border rounded-xl px-6 py-4 flex items-center gap-5 animate-slide-in`}
               >
                 {/* Rank */}
                 <div
-                  className={`w-10 text-center font-bold text-xl ${getMedalColor(rank)}`}
+                  className={`w-12 text-center font-bold text-3xl ${getMedalColor(rank)}`}
                 >
                   {rank}
                 </div>
 
-                {/* Number & Name */}
-                <div className="text-cfa-yellow font-mono font-bold text-lg w-12">
+                {/* Number */}
+                <div className="text-cfa-yellow font-mono font-bold text-2xl w-16">
                   #{p.startNumber}
                 </div>
+
+                {/* Name & Category */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-lg truncate">
+                  <div className="font-bold text-2xl truncate">
                     {p.name}
                     {p.partnerName && (
                       <span className="text-gray-400 font-normal">
-                        {" "}
-                        & {p.partnerName}
+                        {" "}& {p.partnerName}
                       </span>
                     )}
                   </div>
                   {filter === "all" && (
-                    <div className="text-xs text-gray-500">
-                      {DIVISION_LABELS[p.division]} -{" "}
-                      {CATEGORY_LABELS[p.category]}
+                    <div className="text-sm text-gray-500">
+                      {DIVISION_LABELS[p.division]} - {CATEGORY_LABELS[p.category]}
                     </div>
                   )}
                 </div>
@@ -308,7 +327,7 @@ export default function LeaderboardPage() {
                 {/* Time */}
                 <div className="text-right">
                   <div
-                    className={`font-mono font-bold text-2xl ${
+                    className={`font-mono font-bold text-3xl ${
                       rank <= 3 ? getMedalColor(rank) : "text-white"
                     }`}
                   >
@@ -317,11 +336,8 @@ export default function LeaderboardPage() {
                   {rank > 1 &&
                     finishedParticipants[0].totalTime &&
                     p.totalTime && (
-                      <div className="text-xs text-gray-500 font-mono">
-                        +
-                        {formatTime(
-                          p.totalTime - finishedParticipants[0].totalTime
-                        )}
+                      <div className="text-sm text-gray-500 font-mono">
+                        +{formatTime(p.totalTime - finishedParticipants[0].totalTime)}
                       </div>
                     )}
                 </div>
@@ -330,29 +346,50 @@ export default function LeaderboardPage() {
           })}
         </div>
 
-        {finishedParticipants.length === 0 &&
-          racingParticipants.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">&#127939;</div>
-              <p className="text-xl text-gray-500">
-                Wachten op de eerste finishers...
-              </p>
-            </div>
-          )}
+        {finishedParticipants.length === 0 && racingParticipants.length === 0 && (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">&#127939;</div>
+            <p className="text-2xl text-gray-500">
+              Wachten op de eerste finishers...
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Footer ticker */}
-      <footer className="bg-cfa-navy/90 border-t border-white/10 px-6 py-2 flex items-center justify-between text-sm text-gray-500">
-        <span>
-          HYROX Race Simulation - CrossFit Alkmaar - 30 mei 2026
-        </span>
-        <span className="font-mono">
-          {new Date().toLocaleTimeString("nl-NL", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })}
-        </span>
+      {/* Footer: recent finishes ticker + clock */}
+      <footer className="bg-cfa-navy/90 border-t border-white/10 px-8 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3 overflow-hidden flex-1">
+          <span className="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
+            Laatste finishes:
+          </span>
+          <div className="flex gap-4 overflow-hidden">
+            {recentFinishes.map((p) => (
+              <span key={p.id} className="text-sm text-gray-400 whitespace-nowrap">
+                <span className="text-cfa-yellow font-mono font-bold">#{p.startNumber}</span>
+                {" "}{p.name}
+                {" "}
+                <span className="text-cfa-green font-mono">
+                  {p.totalTime ? formatTime(p.totalTime) : ""}
+                </span>
+              </span>
+            ))}
+            {recentFinishes.length === 0 && (
+              <span className="text-sm text-gray-600">Nog geen finishers</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 ml-4">
+          <span className="text-sm text-gray-500">
+            CrossFit Alkmaar - 30 mei 2026
+          </span>
+          <span className="font-mono text-lg text-white/60">
+            {new Date().toLocaleTimeString("nl-NL", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
+          </span>
+        </div>
       </footer>
     </div>
   );
