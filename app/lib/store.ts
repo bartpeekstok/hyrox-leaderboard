@@ -271,11 +271,13 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   const dataRows = lines.slice(1);
 
   // Find column indices from headers
+  // IMPORTANT: match most specific headers first, avoid false matches
+  // e.g. "geschatte eindtijd" contains "ind" which could match "ind/duo"
   const colMap: Record<string, number> = {};
   headers.forEach((h, i) => {
-    if (h.includes('ind') || h.includes('duo') || h === 'a') colMap.category = i;
+    if (h === 'ind/duo' || (h.startsWith('ind') && !h.includes('eindtijd'))) colMap.category = i;
     if (h.includes('divisie')) colMap.division = i;
-    if (h.includes('naam')) colMap.name = i;
+    if (h === 'naam' || (h.includes('naam') && !h.includes('tijd'))) colMap.name = i;
     if (h.includes('telefoon')) colMap.phone = i;
     if (h.includes('e-mail') || h.includes('email')) colMap.email = i;
     if (h.includes('geschatte') || h.includes('eindtijd')) colMap.estimatedTime = i;

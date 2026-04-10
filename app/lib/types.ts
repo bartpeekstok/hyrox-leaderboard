@@ -69,39 +69,45 @@ export function getCategoryWeightClass(category: Category): WeightClass {
   }
 }
 
-// Parse estimated time from Google Sheets format
-// "1:10" → 70, "Tussen 1:15 en 1:18" → 76.5, "weet het niet" / "" → 75 (default)
+// Parse estimated time from Google Sheets format to minutes
+// "1:10" → 70, "01:15:00" → 75, "Tussen 1:15 en 1:18" → 77, "weet het niet" → 90
 export function parseEstimatedTime(raw: string): number {
   if (!raw || raw.trim() === '' || raw.toLowerCase().includes('weet het niet')) {
-    return 90; // default
+    return 90;
   }
 
-  // "Tussen X en Y" → average
-  const tussenMatch = raw.match(/(\d+):(\d+)\s*en\s*(\d+):(\d+)/);
-  if (tussenMatch) {
-    const t1 = parseInt(tussenMatch[1]) * 60 + parseInt(tussenMatch[2]);
-    const t2 = parseInt(tussenMatch[3]) * 60 + parseInt(tussenMatch[4]);
-    return Math.round((t1 + t2) / 2);
-  }
-
-  // Simple "H:MM" or "M:SS" format
-  const timeMatch = raw.match(/(\d+):(\d+)/);
-  if (timeMatch) {
-    const hours = parseInt(timeMatch[1]);
-    const mins = parseInt(timeMatch[2]);
-    // If first number is 0 or 1, it's hours:minutes
-    if (hours <= 2) {
-      return hours * 60 + mins;
+  // "Tussen X en Y" → average of the two times
+  if (raw.toLowerCase().includes('tussen') || raw.toLowerCase().includes('en')) {
+    const times = raw.match(/\d+:\d+(?::\d+)?/g);
+    if (times && times.length >= 2) {
+      const t1 = parseTimeToMinutes(times[0]);
+      const t2 = parseTimeToMinutes(times[1]);
+      return Math.round((t1 + t2) / 2);
     }
-    // Otherwise it's minutes:seconds
-    return hours;
+  }
+
+  // Single time value like "1:10" or "01:15:00"
+  const timeMatch = raw.match(/\d+:\d+(?::\d+)?/);
+  if (timeMatch) {
+    return parseTimeToMinutes(timeMatch[0]);
   }
 
   // Just a number (minutes)
   const numMatch = raw.match(/(\d+)/);
   if (numMatch) return parseInt(numMatch[1]);
 
-  return 75;
+  return 90;
+}
+
+// Convert "H:MM", "HH:MM:SS" to total minutes
+function parseTimeToMinutes(time: string): number {
+  const parts = time.split(':').map(Number);
+  if (parts.length === 3) {
+    // HH:MM:SS → hours*60 + minutes
+    return parts[0] * 60 + parts[1];
+  }
+  // H:MM → hours:minutes (all values in sheet are 0-2 hours)
+  return parts[0] * 60 + parts[1];
 }
 
 // Map Google Sheets category to our Category type

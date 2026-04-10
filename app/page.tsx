@@ -10,7 +10,7 @@ export default function Home() {
           alt="CrossFit Alkmaar"
           width={200}
           height={80}
-          className="mx-auto mb-6 invert saturate-200"
+          className="mx-auto mb-6 hue-rotate-[185deg] saturate-[6] brightness-150"
           priority
         />
         <h1 className="text-5xl font-bold mb-2 tracking-tight">
