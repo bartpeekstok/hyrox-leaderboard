@@ -278,7 +278,7 @@ export default function LeaderboardPage() {
                     <span className="font-medium truncate">
                       {p.name}
                       {p.partnerName && (
-                        <span className="text-gray-400">
+                        <span>
                           {" "}& {p.partnerName}
                         </span>
                       )}
@@ -319,7 +319,7 @@ export default function LeaderboardPage() {
                   <div className="font-bold text-2xl truncate">
                     {p.name}
                     {p.partnerName && (
-                      <span className="text-gray-400 font-normal">
+                      <span className="font-normal">
                         {" "}& {p.partnerName}
                       </span>
                     )}
