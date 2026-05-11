@@ -306,7 +306,7 @@ export default function AdminPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   placeholder="Volledige naam"
                   required
                 />
@@ -320,7 +320,7 @@ export default function AdminPage() {
                   <select
                     value={division}
                     onChange={(e) => setDivision(e.target.value as Division)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   >
                     {Object.entries(DIVISION_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
@@ -336,7 +336,7 @@ export default function AdminPage() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as Category)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   >
                     {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
@@ -356,7 +356,7 @@ export default function AdminPage() {
                     type="text"
                     value={partnerName}
                     onChange={(e) => setPartnerName(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                     placeholder="Naam van partner"
                   />
                 </div>
@@ -372,7 +372,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setEstimatedTime(parseInt(e.target.value) || 60)
                   }
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   min={20}
                   max={180}
                 />
@@ -414,7 +414,7 @@ export default function AdminPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                 />
               </div>
               <div>
@@ -427,7 +427,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setHeatInterval(parseInt(e.target.value) || 10)
                   }
-                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   min={3}
                   max={30}
                 />
@@ -571,16 +571,16 @@ export default function AdminPage() {
                                 </span>
                               )}
                             </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex gap-1">
                               <button
                                 onClick={() => handleEdit(p)}
-                                className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-white/20"
+                                className="text-xs px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-100 font-medium"
                               >
                                 Bewerk
                               </button>
                               <button
                                 onClick={() => handleDelete(p.id)}
-                                className="text-xs px-2 py-1 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100"
+                                className="text-xs px-3 py-1 bg-white border border-red-300 text-red-600 rounded hover:bg-red-50 font-medium"
                               >
                                 Verwijder
                               </button>

@@ -173,9 +173,9 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-200 flex flex-col">
+    <div className="h-screen bg-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-8 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-8 py-4 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-5">
           <Link href="/">
             <Image
@@ -219,7 +219,7 @@ export default function LeaderboardPage() {
       </header>
 
       {/* View title bar with controls */}
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between flex-shrink-0">
         <h2 className="text-2xl font-bold text-cfa-blue uppercase tracking-wider">
           {view === "feed" ? "Laatste finishers" : "Klassement"}
         </h2>
@@ -273,7 +273,7 @@ export default function LeaderboardPage() {
 
       {/* Filter pills (only in ranking view) */}
       {view === "ranking" && availableFilters.length > 1 && (
-        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex flex-wrap items-center gap-2">
+        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex flex-wrap items-center gap-2 flex-shrink-0">
           {availableFilters.map((f) => (
             <button
               key={f}
@@ -295,7 +295,7 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard content */}
       <div
-        className={`flex-1 px-8 py-4 ${
+        className={`flex-1 min-h-0 px-8 py-4 ${
           view === "feed"
             ? "overflow-hidden"
             : "leaderboard-scroll overflow-y-auto"

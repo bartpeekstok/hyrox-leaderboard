@@ -212,7 +212,7 @@ export default function RaceControlPage() {
                 type="number"
                 value={finishInput}
                 onChange={(e) => setFinishInput(e.target.value)}
-                className="w-full bg-black/40 border-2 border-cfa-green/30 rounded-xl px-6 py-4 text-white text-3xl font-mono text-center focus:border-cfa-green focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-white border-2 border-cfa-green/40 rounded-xl px-6 py-4 text-gray-900 text-3xl font-mono text-center focus:border-cfa-green focus:ring-2 focus:ring-cfa-green/20 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="Startnummer"
                 autoFocus
               />
