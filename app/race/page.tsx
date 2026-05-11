@@ -95,6 +95,12 @@ export default function RaceControlPage() {
   } | null>(null);
   const finishInputRef = useRef<HTMLInputElement>(null);
 
+  // Start heat confirmation state
+  const [confirmingStartId, setConfirmingStartId] = useState<string | null>(
+    null
+  );
+  const confirmTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Dismissed wissels (persisted in localStorage)
   const [dismissedWissels, setDismissedWissels] = useState<Set<string>>(
     new Set()
@@ -166,6 +172,17 @@ export default function RaceControlPage() {
   }, []);
 
   async function handleStartHeat(heatId: string) {
+    if (confirmingStartId !== heatId) {
+      setConfirmingStartId(heatId);
+      if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+      confirmTimeoutRef.current = setTimeout(() => {
+        setConfirmingStartId(null);
+      }, 5000);
+      return;
+    }
+
+    if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+    setConfirmingStartId(null);
     try {
       await startHeatDb(heatId);
       fetchData();
@@ -411,9 +428,15 @@ export default function RaceControlPage() {
               </div>
               <button
                 onClick={() => handleStartHeat(nextHeat.id)}
-                className="bg-cfa-blue hover:bg-cfa-blue-hover text-white font-bold text-xl px-10 py-4 rounded-xl transition-colors shadow-lg"
+                className={`font-bold text-xl px-10 py-4 rounded-xl transition-colors shadow-lg ${
+                  confirmingStartId === nextHeat.id
+                    ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
+                    : "bg-cfa-blue hover:bg-cfa-blue-hover text-white"
+                }`}
               >
-                START HEAT
+                {confirmingStartId === nextHeat.id
+                  ? "KLIK NOGMAALS OM TE STARTEN"
+                  : "START HEAT"}
               </button>
             </div>
             <div className="grid grid-cols-3 gap-3">
