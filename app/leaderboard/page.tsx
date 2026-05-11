@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -15,10 +15,12 @@ import { getParticipants } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 type FilterKey = "all" | `${Division}_${Category}`;
+type View = "ranking" | "feed";
 
 export default function LeaderboardPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [view, setView] = useState<View>("ranking");
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [autoRotate, setAutoRotate] = useState(true); // ON by default for TV
@@ -63,7 +65,7 @@ export default function LeaderboardPage() {
 
   // Auto-rotate through categories (skip "all" for TV - show each category)
   useEffect(() => {
-    if (!autoRotate) return;
+    if (!autoRotate || view !== "ranking") return;
 
     const interval = setInterval(() => {
       const filters = filtersRef.current;
@@ -75,7 +77,7 @@ export default function LeaderboardPage() {
     }, 10000); // 10 seconds per category
 
     return () => clearInterval(interval);
-  }, [autoRotate]);
+  }, [autoRotate, view]);
 
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -217,37 +219,65 @@ export default function LeaderboardPage() {
       {/* Category title bar with dots indicator */}
       <div className="bg-cfa-navy/60 px-8 py-3 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-cfa-yellow uppercase tracking-wider">
-          {getFilterLabel(filter)}
+          {view === "feed" ? "Laatste finishers" : getFilterLabel(filter)}
         </h2>
         <div className="flex items-center gap-3">
-          {/* Category dots */}
-          <div className="flex gap-1.5">
-            {availableFilters.map((f) => (
-              <button
-                key={f}
-                onClick={() => {
-                  setFilter(f);
-                  setAutoRotate(false);
-                }}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  filter === f
-                    ? "bg-cfa-yellow scale-125"
-                    : "bg-white/20 hover:bg-white/40"
-                }`}
-                title={getFilterLabel(f)}
-              />
-            ))}
+          {/* View toggle */}
+          <div className="flex bg-white/5 rounded-full p-0.5">
+            <button
+              onClick={() => setView("ranking")}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                view === "ranking"
+                  ? "bg-cfa-yellow text-cfa-navy"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Klassement
+            </button>
+            <button
+              onClick={() => setView("feed")}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                view === "feed"
+                  ? "bg-cfa-yellow text-cfa-navy"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Laatste finishers
+            </button>
           </div>
-          <button
-            onClick={() => setAutoRotate(!autoRotate)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              autoRotate
-                ? "bg-cfa-green/20 text-cfa-green"
-                : "bg-white/5 text-gray-500 hover:bg-white/10"
-            }`}
-          >
-            Auto {autoRotate ? "AAN" : "UIT"}
-          </button>
+
+          {view === "ranking" && (
+            <>
+              {/* Category dots */}
+              <div className="flex gap-1.5">
+                {availableFilters.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => {
+                      setFilter(f);
+                      setAutoRotate(false);
+                    }}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      filter === f
+                        ? "bg-cfa-yellow scale-125"
+                        : "bg-white/20 hover:bg-white/40"
+                    }`}
+                    title={getFilterLabel(f)}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => setAutoRotate(!autoRotate)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  autoRotate
+                    ? "bg-cfa-green/20 text-cfa-green"
+                    : "bg-white/5 text-gray-500 hover:bg-white/10"
+                }`}
+              >
+                Auto {autoRotate ? "AAN" : "UIT"}
+              </button>
+            </>
+          )}
           <button
             onClick={toggleFullscreen}
             className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-gray-400 hover:bg-white/10 transition-colors"
@@ -259,6 +289,10 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard content */}
       <div className="flex-1 px-8 py-4 leaderboard-scroll overflow-y-auto">
+        {view === "feed" ? (
+          <LatestFinishersFeed participants={participants} />
+        ) : (
+        <>
         {/* Currently Racing */}
         {racingParticipants.length > 0 && (
           <div className="mb-5">
@@ -361,29 +395,35 @@ export default function LeaderboardPage() {
             </p>
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Footer: recent finishes ticker + clock */}
       <footer className="bg-cfa-navy/90 border-t border-white/10 px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
-          <span className="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
-            Laatste finishes:
-          </span>
-          <div className="flex gap-4 overflow-hidden">
-            {recentFinishes.map((p) => (
-              <span key={p.id} className="text-sm text-gray-400 whitespace-nowrap">
-                <span className="text-cfa-yellow font-mono font-bold">#{p.startNumber}</span>
-                {" "}{p.name}
-                {" "}
-                <span className="text-cfa-green font-mono">
-                  {p.totalTime ? formatTime(p.totalTime) : ""}
-                </span>
+          {view === "ranking" ? (
+            <>
+              <span className="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                Laatste finishes:
               </span>
-            ))}
-            {recentFinishes.length === 0 && (
-              <span className="text-sm text-gray-600">Nog geen finishers</span>
-            )}
-          </div>
+              <div className="flex gap-4 overflow-hidden">
+                {recentFinishes.map((p) => (
+                  <span key={p.id} className="text-sm text-gray-400 whitespace-nowrap">
+                    <span className="text-cfa-yellow font-mono font-bold">#{p.startNumber}</span>
+                    {" "}{p.name}
+                    {" "}
+                    <span className="text-cfa-green font-mono">
+                      {p.totalTime ? formatTime(p.totalTime) : ""}
+                    </span>
+                  </span>
+                ))}
+                {recentFinishes.length === 0 && (
+                  <span className="text-sm text-gray-600">Nog geen finishers</span>
+                )}
+              </div>
+            </>
+          ) : null}
         </div>
         <div className="flex items-center gap-4 ml-4">
           <span className="text-sm text-gray-500">
@@ -398,6 +438,96 @@ export default function LeaderboardPage() {
           </span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+const FEED_SIZE = 10;
+const ROW_HEIGHT = 92; // px
+
+function LatestFinishersFeed({ participants }: { participants: Participant[] }) {
+  const latest = useMemo(
+    () =>
+      participants
+        .filter((p) => p.status === "finished" && p.finishTime)
+        .sort((a, b) => (b.finishTime || 0) - (a.finishTime || 0))
+        .slice(0, FEED_SIZE),
+    [participants]
+  );
+
+  const prevIdsRef = useRef<Set<string>>(new Set());
+  const newIds = useMemo(() => {
+    const fresh = new Set<string>();
+    for (const p of latest) {
+      if (!prevIdsRef.current.has(p.id)) fresh.add(p.id);
+    }
+    return fresh;
+  }, [latest]);
+
+  useEffect(() => {
+    prevIdsRef.current = new Set(latest.map((p) => p.id));
+  }, [latest]);
+
+  if (latest.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">&#127939;</div>
+        <p className="text-2xl text-gray-500">
+          Wachten op de eerste finishers...
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="relative"
+      style={{ height: ROW_HEIGHT * FEED_SIZE + (FEED_SIZE - 1) * 8 }}
+    >
+      {latest.map((p, i) => {
+        const isNew = newIds.has(p.id);
+        const divisionLabel = DIVISION_LABELS[p.division].toUpperCase();
+        const divisionColor =
+          p.division === "pro" ? "text-cfa-yellow" : "text-cfa-green";
+        const divisionBg =
+          p.division === "pro"
+            ? "bg-cfa-yellow/15 border-cfa-yellow/40"
+            : "bg-cfa-green/15 border-cfa-green/40";
+        return (
+          <div
+            key={p.id}
+            className={`absolute left-0 right-0 transition-all duration-700 ease-out ${
+              isNew ? "animate-slide-in-top" : ""
+            }`}
+            style={{ top: i * (ROW_HEIGHT + 8), height: ROW_HEIGHT }}
+          >
+            <div
+              className={`h-full bg-white/5 border border-white/10 rounded-xl px-8 flex items-center gap-6 ${
+                isNew ? "animate-flash-glow" : ""
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-4xl truncate">
+                  {p.name}
+                  {p.partnerName && (
+                    <span className="font-normal text-gray-300">
+                      {" "}& {p.partnerName}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div
+                className={`px-4 py-1.5 rounded-full border ${divisionBg} ${divisionColor} font-bold uppercase tracking-wider text-lg`}
+              >
+                {divisionLabel}
+              </div>
+              <div className="font-mono font-bold text-5xl text-white tabular-nums w-56 text-right">
+                {p.totalTime ? formatTime(p.totalTime) : "--:--"}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

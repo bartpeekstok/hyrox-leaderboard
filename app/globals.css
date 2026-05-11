@@ -54,8 +54,41 @@ body {
   }
 }
 
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-120%);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flashGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    background-color: rgba(16, 185, 129, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    background-color: rgba(16, 185, 129, 0.08);
+  }
+}
+
 .animate-slide-in {
   animation: slideIn 0.5s ease-out;
+}
+
+.animate-slide-in-top {
+  animation: slideInFromTop 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-flash-glow {
+  animation: flashGlow 2.5s ease-out;
 }
 
 .animate-pulse-glow {
