@@ -34,10 +34,7 @@ export default function Home() {
             className="group bg-cfa-navy/80 border border-white/10 rounded-2xl p-8 hover:border-cfa-blue/50 transition-all hover:scale-[1.02]"
           >
             <div className="text-3xl mb-4">&#9881;</div>
-            <h2 className="text-xl font-bold mb-2">Admin</h2>
-            <p className="text-gray-400 text-sm">
-              Deelnemers invoeren, heat-indeling genereren en instellingen beheren
-            </p>
+            <h2 className="text-xl font-bold">Admin</h2>
           </Link>
         )}
 
@@ -47,33 +44,24 @@ export default function Home() {
             className="group bg-cfa-navy/80 border border-white/10 rounded-2xl p-8 hover:border-cfa-yellow/50 transition-all hover:scale-[1.02]"
           >
             <div className="text-3xl mb-4">&#9201;</div>
-            <h2 className="text-xl font-bold mb-2">Race Control</h2>
-            <p className="text-gray-400 text-sm">
-              Heats starten, finishes registreren en de race live beheren
-            </p>
+            <h2 className="text-xl font-bold">Race Control</h2>
           </Link>
         )}
-
-        <Link
-          href="/leaderboard"
-          className="group bg-cfa-navy/80 border border-white/10 rounded-2xl p-8 hover:border-cfa-green/50 transition-all hover:scale-[1.02]"
-        >
-          <div className="text-3xl mb-4">&#127942;</div>
-          <h2 className="text-xl font-bold mb-2">Leaderboard</h2>
-          <p className="text-gray-400 text-sm">
-            Live resultaten op het grote scherm - fullscreen TV modus
-          </p>
-        </Link>
 
         <Link
           href="/startlijst"
           className="group bg-cfa-navy/80 border border-white/10 rounded-2xl p-8 hover:border-cfa-yellow/50 transition-all hover:scale-[1.02]"
         >
           <div className="text-3xl mb-4">&#128197;</div>
-          <h2 className="text-xl font-bold mb-2">Startlijst</h2>
-          <p className="text-gray-400 text-sm">
-            Heat-indeling met starttijden voor alle deelnemers
-          </p>
+          <h2 className="text-xl font-bold">Startlijst</h2>
+        </Link>
+
+        <Link
+          href="/leaderboard"
+          className="group bg-cfa-navy/80 border border-white/10 rounded-2xl p-8 hover:border-cfa-green/50 transition-all hover:scale-[1.02]"
+        >
+          <div className="text-3xl mb-4">&#127942;</div>
+          <h2 className="text-xl font-bold">Leaderboard</h2>
         </Link>
       </div>
     </div>

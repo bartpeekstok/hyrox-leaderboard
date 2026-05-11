@@ -140,7 +140,7 @@ export default function LeaderboardPage() {
   const availableFilters = getAvailableFilters();
 
   function getFilterLabel(f: FilterKey): string {
-    if (f === "all") return "Alle categorieën";
+    if (f === "all") return "Alle";
     const [div, ...catParts] = f.split("_");
     const cat = catParts.join("_") as Category;
     return `${DIVISION_LABELS[div as Division]} ${CATEGORY_LABELS[cat] || cat}`;
@@ -218,10 +218,10 @@ export default function LeaderboardPage() {
         </div>
       </header>
 
-      {/* Category title bar with dots indicator */}
+      {/* View title bar with controls */}
       <div className="bg-cfa-navy/60 px-8 py-3 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-cfa-yellow uppercase tracking-wider">
-          {view === "feed" ? "Laatste finishers" : getFilterLabel(filter)}
+          {view === "feed" ? "Laatste finishers" : "Klassement"}
         </h2>
         <div className="flex items-center gap-3">
           {/* View toggle (admin only) */}
@@ -251,36 +251,16 @@ export default function LeaderboardPage() {
           )}
 
           {view === "ranking" && (
-            <>
-              {/* Category dots */}
-              <div className="flex gap-1.5">
-                {availableFilters.map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => {
-                      setFilter(f);
-                      setAutoRotate(false);
-                    }}
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      filter === f
-                        ? "bg-cfa-yellow scale-125"
-                        : "bg-white/20 hover:bg-white/40"
-                    }`}
-                    title={getFilterLabel(f)}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={() => setAutoRotate(!autoRotate)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  autoRotate
-                    ? "bg-cfa-green/20 text-cfa-green"
-                    : "bg-white/5 text-gray-500 hover:bg-white/10"
-                }`}
-              >
-                Auto {autoRotate ? "AAN" : "UIT"}
-              </button>
-            </>
+            <button
+              onClick={() => setAutoRotate(!autoRotate)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                autoRotate
+                  ? "bg-cfa-green/20 text-cfa-green"
+                  : "bg-white/5 text-gray-500 hover:bg-white/10"
+              }`}
+            >
+              Auto {autoRotate ? "AAN" : "UIT"}
+            </button>
           )}
           <button
             onClick={toggleFullscreen}
@@ -290,6 +270,28 @@ export default function LeaderboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Filter pills (only in ranking view) */}
+      {view === "ranking" && availableFilters.length > 1 && (
+        <div className="bg-cfa-navy/40 border-t border-white/5 px-8 py-3 flex flex-wrap items-center gap-2">
+          {availableFilters.map((f) => (
+            <button
+              key={f}
+              onClick={() => {
+                setFilter(f);
+                setAutoRotate(false);
+              }}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                filter === f
+                  ? "bg-cfa-yellow text-cfa-navy"
+                  : "bg-white/5 text-gray-300 hover:bg-white/10"
+              }`}
+            >
+              {getFilterLabel(f)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Leaderboard content */}
       <div className="flex-1 px-8 py-4 leaderboard-scroll overflow-y-auto">
