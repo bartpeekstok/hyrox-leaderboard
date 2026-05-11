@@ -17,6 +17,8 @@ import { supabase } from "../lib/supabase";
 type FilterKey = "all" | `${Division}_${Category}`;
 type View = "ranking" | "feed";
 
+const PUBLIC_ONLY = process.env.NEXT_PUBLIC_PUBLIC_ONLY === "true";
+
 export default function LeaderboardPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -222,29 +224,31 @@ export default function LeaderboardPage() {
           {view === "feed" ? "Laatste finishers" : getFilterLabel(filter)}
         </h2>
         <div className="flex items-center gap-3">
-          {/* View toggle */}
-          <div className="flex bg-white/5 rounded-full p-0.5">
-            <button
-              onClick={() => setView("ranking")}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                view === "ranking"
-                  ? "bg-cfa-yellow text-cfa-navy"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Klassement
-            </button>
-            <button
-              onClick={() => setView("feed")}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                view === "feed"
-                  ? "bg-cfa-yellow text-cfa-navy"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Laatste finishers
-            </button>
-          </div>
+          {/* View toggle (admin only) */}
+          {!PUBLIC_ONLY && (
+            <div className="flex bg-white/5 rounded-full p-0.5">
+              <button
+                onClick={() => setView("ranking")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  view === "ranking"
+                    ? "bg-cfa-yellow text-cfa-navy"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                Klassement
+              </button>
+              <button
+                onClick={() => setView("feed")}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  view === "feed"
+                    ? "bg-cfa-yellow text-cfa-navy"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                Laatste finishers
+              </button>
+            </div>
+          )}
 
           {view === "ranking" && (
             <>
