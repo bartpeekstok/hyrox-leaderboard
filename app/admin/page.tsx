@@ -201,20 +201,20 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-400">Laden...</div>
+        <div className="text-xl text-gray-600">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-200">
       {/* Header */}
-      <header className="bg-cfa-navy border-b border-white/10 px-6 py-4">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/">
               <Image
-                src="/logo-hyrox.png"
+                src="/logo_dark.png"
                 alt="CrossFit Alkmaar"
                 width={120}
                 height={60}
@@ -222,14 +222,14 @@ export default function AdminPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold">Admin Panel</h1>
-              <p className="text-sm text-gray-400">HYROX Race Simulation</p>
+              <p className="text-sm text-gray-600">HYROX Race Simulation</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="bg-cfa-blue/30 text-cfa-yellow px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-cfa-blue/10 text-cfa-blue border border-cfa-blue/20 px-3 py-1 rounded-full text-sm font-semibold">
               {participants.reduce((sum, p) => sum + (p.category.startsWith("duo_") ? 2 : 1), 0)} deelnemers
             </span>
-            <span className="bg-cfa-blue/30 text-cfa-green px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="bg-cfa-green/10 text-cfa-green border border-cfa-green/20 px-3 py-1 rounded-full text-sm font-semibold">
               {heats.length} heats
             </span>
             {autoSync && (
@@ -245,20 +245,20 @@ export default function AdminPage() {
         {/* Left Column */}
         <div className="lg:col-span-1 space-y-6">
           {/* Google Sheets Sync */}
-          <div className="bg-cfa-navy/60 border border-cfa-yellow/20 rounded-xl p-6">
-            <h2 className="text-lg font-bold mb-4 text-cfa-yellow">
+          <div className="bg-white border border-cfa-blue/30 shadow-sm rounded-lg p-6">
+            <h2 className="text-lg font-bold mb-4 text-cfa-blue">
               Google Sheets Sync
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-600 mb-1">
                   Google Sheets URL
                 </label>
                 <input
                   type="url"
                   value={sheetUrl}
                   onChange={(e) => setSheetUrl(e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
                   placeholder="https://docs.google.com/spreadsheets/d/..."
                 />
               </div>
@@ -266,7 +266,7 @@ export default function AdminPage() {
                 <button
                   onClick={handleSync}
                   disabled={syncing || !sheetUrl}
-                  className="flex-1 bg-cfa-yellow hover:bg-cfa-yellow-hover disabled:opacity-50 text-black font-bold py-2 rounded-lg transition-colors"
+                  className="flex-1 bg-cfa-blue hover:bg-cfa-blue-hover disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition-colors"
                 >
                   {syncing ? "Syncing..." : "Sync nu"}
                 </button>
@@ -275,7 +275,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
                     autoSync
                       ? "bg-cfa-green/20 text-cfa-green border border-cfa-green/30"
-                      : "bg-white/10 text-gray-400 hover:bg-white/20"
+                      : "bg-gray-100 text-gray-600 hover:bg-white/20"
                   }`}
                 >
                   Auto {autoSync ? "AAN" : "UIT"}
@@ -293,20 +293,20 @@ export default function AdminPage() {
           </div>
 
           {/* Add Participant Form */}
-          <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
+          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
             <h2 className="text-lg font-bold mb-4">
               {editingId ? "Deelnemer bewerken" : "Handmatig toevoegen"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-600 mb-1">
                   Naam
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   placeholder="Volledige naam"
                   required
                 />
@@ -314,13 +314,13 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
+                  <label className="block text-sm text-gray-600 mb-1">
                     Divisie
                   </label>
                   <select
                     value={division}
                     onChange={(e) => setDivision(e.target.value as Division)}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   >
                     {Object.entries(DIVISION_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
@@ -330,13 +330,13 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
+                  <label className="block text-sm text-gray-600 mb-1">
                     Categorie
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as Category)}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   >
                     {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                       <option key={key} value={key}>
@@ -349,21 +349,21 @@ export default function AdminPage() {
 
               {isDuo && (
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">
+                  <label className="block text-sm text-gray-600 mb-1">
                     Partner naam
                   </label>
                   <input
                     type="text"
                     value={partnerName}
                     onChange={(e) => setPartnerName(e.target.value)}
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                     placeholder="Naam van partner"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-600 mb-1">
                   Geschatte eindtijd (minuten)
                 </label>
                 <input
@@ -372,7 +372,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setEstimatedTime(parseInt(e.target.value) || 60)
                   }
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   min={20}
                   max={180}
                 />
@@ -393,7 +393,7 @@ export default function AdminPage() {
                       setName("");
                       setPartnerName("");
                     }}
-                    className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-white/20 transition-colors"
                   >
                     Annuleren
                   </button>
@@ -403,22 +403,22 @@ export default function AdminPage() {
           </div>
 
           {/* Heat Settings */}
-          <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
+          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
             <h2 className="text-lg font-bold mb-4">Heat Instellingen</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-600 mb-1">
                   Eerste heat start om
                 </label>
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
+                <label className="block text-sm text-gray-600 mb-1">
                   Interval tussen heats (min)
                 </label>
                 <input
@@ -427,14 +427,14 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setHeatInterval(parseInt(e.target.value) || 10)
                   }
-                  className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-white focus:border-cfa-yellow focus:outline-none"
                   min={3}
                   max={30}
                 />
               </div>
               <button
                 onClick={handleGenerateHeats}
-                className="w-full bg-cfa-yellow hover:bg-cfa-yellow-hover text-black font-bold py-3 rounded-lg transition-colors text-lg"
+                className="w-full bg-cfa-blue hover:bg-cfa-blue-hover text-white font-bold py-3 rounded-lg transition-colors text-lg"
               >
                 Heat-indeling genereren
               </button>
@@ -466,12 +466,12 @@ export default function AdminPage() {
               return (
                 <div
                   key={key}
-                  className="bg-cfa-navy/60 border border-white/10 rounded-lg p-3 text-center"
+                  className="bg-white border border-gray-200 shadow-sm border border-gray-200 rounded-lg p-3 text-center"
                 >
-                  <div className="text-2xl font-bold text-cfa-yellow">
+                  <div className="text-2xl font-bold text-cfa-blue">
                     {count}
                   </div>
-                  <div className="text-xs text-gray-400">{label}</div>
+                  <div className="text-xs text-gray-600">{label}</div>
                 </div>
               );
             })}
@@ -479,7 +479,7 @@ export default function AdminPage() {
 
           {/* Heats view */}
           {heats.length > 0 && (
-            <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
+            <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
               <h2 className="text-lg font-bold mb-4">
                 Heat-indeling ({heats.length} heats)
               </h2>
@@ -497,7 +497,7 @@ export default function AdminPage() {
                         <span className="font-bold text-sm">
                           Heat {heat.heatNumber}
                         </span>
-                        <span className="text-xs text-cfa-yellow">
+                        <span className="text-xs text-cfa-blue">
                           {heat.scheduledTime}
                         </span>
                       </div>
@@ -507,7 +507,7 @@ export default function AdminPage() {
                           className="text-sm text-gray-300 flex justify-between"
                         >
                           <span>
-                            <span className="text-cfa-yellow font-mono font-bold mr-2">
+                            <span className="text-cfa-blue font-mono font-bold mr-2">
                               #{p.startNumber}
                             </span>
                             {p.name}
@@ -526,7 +526,7 @@ export default function AdminPage() {
           )}
 
           {/* Participants list by category */}
-          <div className="bg-cfa-navy/60 border border-white/10 rounded-xl p-6">
+          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
             <h2 className="text-lg font-bold mb-4">Alle deelnemers</h2>
             {Object.entries(participantsByCategory)
               .sort()
@@ -535,7 +535,7 @@ export default function AdminPage() {
                 const cat = catParts.join("_") as Category;
                 return (
                   <div key={key} className="mb-6 last:mb-0">
-                    <h3 className="text-sm font-semibold text-cfa-yellow mb-2 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-cfa-blue mb-2 uppercase tracking-wider">
                       {DIVISION_LABELS[div as Division]} -{" "}
                       {CATEGORY_LABELS[cat] || key} ({ps.length})
                     </h3>
@@ -548,7 +548,7 @@ export default function AdminPage() {
                             className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 group"
                           >
                             <div className="flex items-center gap-3">
-                              <span className="text-cfa-yellow font-mono font-bold text-sm w-8">
+                              <span className="text-cfa-blue font-mono font-bold text-sm w-8">
                                 #{p.startNumber}
                               </span>
                               <span className="text-sm font-medium">
@@ -564,7 +564,7 @@ export default function AdminPage() {
                                 ~{p.estimatedTime}m
                               </span>
                               {p.heatId && (
-                                <span className="text-xs bg-cfa-blue/30 text-cfa-yellow px-2 py-0.5 rounded">
+                                <span className="text-xs bg-cfa-blue/10 text-cfa-blue border border-cfa-blue/20 px-2 py-0.5 rounded">
                                   Heat{" "}
                                   {heats.find((h) => h.id === p.heatId)
                                     ?.heatNumber || "?"}
@@ -574,7 +574,7 @@ export default function AdminPage() {
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => handleEdit(p)}
-                                className="text-xs px-2 py-1 bg-white/10 rounded hover:bg-white/20"
+                                className="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-white/20"
                               >
                                 Bewerk
                               </button>

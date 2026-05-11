@@ -164,20 +164,20 @@ export default function RaceControlPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-400">Laden...</div>
+        <div className="text-xl text-gray-600">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-200">
       {/* Header */}
-      <header className="bg-cfa-navy border-b border-white/10 px-6 py-4">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/">
               <Image
-                src="/logo-hyrox.png"
+                src="/logo_dark.png"
                 alt="CrossFit Alkmaar"
                 width={120}
                 height={60}
@@ -185,11 +185,11 @@ export default function RaceControlPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold">Race Control</h1>
-              <p className="text-sm text-gray-400">HYROX Race Simulation</p>
+              <p className="text-sm text-gray-600">HYROX Race Simulation</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-cfa-yellow/20 text-cfa-yellow px-3 py-1 rounded-full text-sm font-bold">
+            <div className="bg-cfa-blue/20 text-cfa-blue px-3 py-1 rounded-full text-sm font-bold">
               {racingHeats.length} racing
             </div>
             <div className="bg-cfa-green/20 text-cfa-green px-3 py-1 rounded-full text-sm font-bold">
@@ -201,7 +201,7 @@ export default function RaceControlPage() {
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* FINISH INPUT - Always visible at top */}
-        <div className="bg-cfa-navy/80 border-2 border-cfa-green/30 rounded-xl p-6">
+        <div className="bg-white/80 border-2 border-cfa-green/30 rounded-xl p-6">
           <h2 className="text-xl font-bold mb-3 text-cfa-green">
             Finish registreren
           </h2>
@@ -224,7 +224,7 @@ export default function RaceControlPage() {
                         ? "text-cfa-green"
                         : finishPreview.status === "finished"
                           ? "text-gray-500"
-                          : "text-cfa-yellow"
+                          : "text-cfa-blue"
                     }`}
                   >
                     {finishPreview.name}
@@ -257,19 +257,19 @@ export default function RaceControlPage() {
 
         {/* Next Heat to Start */}
         {nextHeat && (
-          <div className="bg-cfa-navy/80 border-2 border-cfa-yellow/30 rounded-xl p-6 animate-pulse-glow">
+          <div className="bg-white/80 border-2 border-cfa-yellow/30 rounded-xl p-6 animate-pulse-glow">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold">
                   Volgende: Heat {nextHeat.heatNumber}
                 </h2>
-                <p className="text-cfa-yellow text-lg">
+                <p className="text-cfa-blue text-lg">
                   Gepland om {nextHeat.scheduledTime}
                 </p>
               </div>
               <button
                 onClick={() => handleStartHeat(nextHeat.id)}
-                className="bg-cfa-yellow hover:bg-cfa-yellow-hover text-black font-bold text-xl px-10 py-4 rounded-xl transition-colors shadow-lg"
+                className="bg-cfa-blue hover:bg-cfa-blue-hover text-white font-bold text-xl px-10 py-4 rounded-xl transition-colors shadow-lg"
               >
                 START HEAT
               </button>
@@ -283,7 +283,7 @@ export default function RaceControlPage() {
                     key={id}
                     className="bg-black/30 rounded-lg p-3 text-center"
                   >
-                    <div className="text-cfa-yellow font-mono font-bold text-2xl mb-1">
+                    <div className="text-cfa-blue font-mono font-bold text-2xl mb-1">
                       #{p.startNumber}
                     </div>
                     <div className="font-bold">
@@ -295,7 +295,7 @@ export default function RaceControlPage() {
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-gray-600">
                       {DIVISION_LABELS[p.division]} -{" "}
                       {CATEGORY_LABELS[p.category]}
                     </div>
@@ -309,19 +309,19 @@ export default function RaceControlPage() {
         {/* Currently Racing */}
         {racingHeats.length > 0 && (
           <div>
-            <h2 className="text-xl font-bold mb-4 text-cfa-yellow">
+            <h2 className="text-xl font-bold mb-4 text-cfa-blue">
               Nu aan het racen
             </h2>
             <div className="space-y-4">
               {racingHeats.map((heat) => (
                 <div
                   key={heat.id}
-                  className="bg-cfa-navy/60 border border-cfa-yellow/20 rounded-xl p-4"
+                  className="bg-white border border-gray-200 shadow-sm border border-cfa-yellow/20 rounded-xl p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold">
                       Heat {heat.heatNumber}{" "}
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-600 text-sm">
                         gestart om{" "}
                         {heat.startTime
                           ? new Date(heat.startTime).toLocaleTimeString(
@@ -332,7 +332,7 @@ export default function RaceControlPage() {
                       </span>
                     </h3>
                     {heat.startTime && (
-                      <span className="text-cfa-yellow font-mono text-lg">
+                      <span className="text-cfa-blue font-mono text-lg">
                         {formatTime(now - heat.startTime)}
                       </span>
                     )}
@@ -348,10 +348,10 @@ export default function RaceControlPage() {
                           className={`rounded-lg p-4 flex flex-col items-center gap-2 ${
                             isFinished
                               ? "bg-cfa-green/10 border border-cfa-green/30"
-                              : "bg-black/30 border border-white/10"
+                              : "bg-white border border-gray-300"
                           }`}
                         >
-                          <div className="text-cfa-yellow font-mono font-bold text-xl">
+                          <div className="text-cfa-blue font-mono font-bold text-xl">
                             #{p.startNumber}
                           </div>
                           <div className="font-bold text-center">
@@ -363,7 +363,7 @@ export default function RaceControlPage() {
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-600">
                             {DIVISION_LABELS[p.division]} -{" "}
                             {CATEGORY_LABELS[p.category]}
                           </div>
@@ -394,14 +394,14 @@ export default function RaceControlPage() {
         {/* Upcoming Heats */}
         {scheduledHeats.length > 1 && (
           <div>
-            <h2 className="text-xl font-bold mb-4 text-gray-400">
+            <h2 className="text-xl font-bold mb-4 text-gray-600">
               Wachtrij ({scheduledHeats.length - 1} heats)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
               {scheduledHeats.slice(1, 10).map((heat) => (
                 <div
                   key={heat.id}
-                  className="bg-cfa-navy/40 border border-white/5 rounded-lg p-3"
+                  className="bg-white/40 border border-white/5 rounded-lg p-3"
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-sm">
@@ -415,8 +415,8 @@ export default function RaceControlPage() {
                     const p = participants.find((pp) => pp.id === id);
                     if (!p) return null;
                     return (
-                      <div key={id} className="text-sm text-gray-400">
-                        <span className="text-cfa-yellow font-mono">
+                      <div key={id} className="text-sm text-gray-600">
+                        <span className="text-cfa-blue font-mono">
                           #{p.startNumber}
                         </span>{" "}
                         {p.name}
@@ -438,7 +438,7 @@ export default function RaceControlPage() {
         {heats.length === 0 && (
           <div className="text-center py-20">
             <p className="text-xl text-gray-500 mb-4">Geen heats gevonden</p>
-            <Link href="/admin" className="text-cfa-yellow hover:underline">
+            <Link href="/admin" className="text-cfa-blue hover:underline">
               Ga naar Admin om heats te genereren
             </Link>
           </div>
