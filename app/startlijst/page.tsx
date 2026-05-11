@@ -226,9 +226,7 @@ export default function StartlijstPage() {
                             <div className="font-medium text-gray-900 truncate">
                               {p.name}
                               {p.partnerName && (
-                                <span className="font-normal">
-                                  {" "}& {p.partnerName}
-                                </span>
+                                <span>{" "}& {p.partnerName}</span>
                               )}
                             </div>
                           </div>

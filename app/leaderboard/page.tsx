@@ -364,11 +364,7 @@ export default function LeaderboardPage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-2xl text-gray-900 truncate">
                     {p.name}
-                    {p.partnerName && (
-                      <span className="font-normal">
-                        {" "}& {p.partnerName}
-                      </span>
-                    )}
+                    {p.partnerName && <span>{" "}& {p.partnerName}</span>}
                   </div>
                   {filter === "all" && (
                     <div className="text-sm text-gray-500">
@@ -538,11 +534,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-4xl text-gray-900 truncate">
                     {p.name}
-                    {p.partnerName && (
-                      <span className="font-normal">
-                        {" "}& {p.partnerName}
-                      </span>
-                    )}
+                    {p.partnerName && <span>{" "}& {p.partnerName}</span>}
                   </div>
                 </div>
                 <div
