@@ -27,7 +27,6 @@ export default function LeaderboardPage() {
   const [now, setNow] = useState(Date.now());
   const [autoRotate, setAutoRotate] = useState(true); // ON by default for TV
   const filtersRef = useRef<FilterKey[]>(["all"]);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -80,16 +79,6 @@ export default function LeaderboardPage() {
 
     return () => clearInterval(interval);
   }, [autoRotate, view]);
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  }
 
   function getAvailableFilters(): FilterKey[] {
     const filters: FilterKey[] = ["all"];
@@ -175,7 +164,7 @@ export default function LeaderboardPage() {
   return (
     <div className="h-screen bg-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 flex-shrink-0">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-3 sm:gap-5 min-w-0">
           <Link href="/" className="shrink-0">
             <Image
@@ -187,13 +176,21 @@ export default function LeaderboardPage() {
             />
           </Link>
           <div className="hidden sm:block h-10 w-px bg-gray-300" />
-          <h1 className="text-base sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
-            HYROX <span className="text-cfa-blue">LEADERBOARD</span>
-          </h1>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+              HYROX <span className="text-cfa-blue">LEADERBOARD</span>
+            </h1>
+            <p className="text-xs text-gray-500 truncate leading-tight sm:hidden">
+              CrossFit Alkmaar
+            </p>
+            <p className="text-xs text-gray-500 truncate leading-tight sm:hidden">
+              30 mei 2026
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+        <div className="flex items-center justify-around sm:justify-end gap-3 sm:gap-6 sm:shrink-0">
           <div className="text-center">
-            <div className="text-xl sm:text-4xl font-mono font-bold text-cfa-green leading-none">
+            <div className="text-2xl sm:text-4xl font-mono font-bold text-cfa-green leading-none">
               {totalRacing}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -201,7 +198,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-4xl font-mono font-bold text-cfa-blue leading-none">
+            <div className="text-2xl sm:text-4xl font-mono font-bold text-cfa-blue leading-none">
               {totalFinished}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -209,7 +206,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xl sm:text-4xl font-mono font-bold text-gray-400 leading-none">
+            <div className="text-2xl sm:text-4xl font-mono font-bold text-gray-400 leading-none">
               {totalParticipants}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -251,24 +248,6 @@ export default function LeaderboardPage() {
             </div>
           )}
 
-          {view === "ranking" && (
-            <button
-              onClick={() => setAutoRotate(!autoRotate)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                autoRotate
-                  ? "bg-cfa-green/15 text-cfa-green"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              Auto {autoRotate ? "AAN" : "UIT"}
-            </button>
-          )}
-          <button
-            onClick={toggleFullscreen}
-            className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-          >
-            {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          </button>
         </div>
       </div>
 
