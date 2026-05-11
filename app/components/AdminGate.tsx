@@ -38,12 +38,14 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   if (authenticated) return <>{children}</>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-background">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-gray-200">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm bg-cfa-navy/80 border border-white/10 rounded-2xl p-8"
+        className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm p-8"
       >
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin login</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900">
+          Admin login
+        </h1>
         <input
           type="password"
           value={input}
@@ -53,14 +55,14 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
           }}
           autoFocus
           placeholder="Wachtwoord"
-          className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 mb-3 focus:outline-none focus:border-cfa-yellow"
+          className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 mb-3 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-cfa-blue"
         />
         {error && (
           <p className="text-cfa-red text-sm mb-3">Onjuist wachtwoord</p>
         )}
         <button
           type="submit"
-          className="w-full bg-cfa-yellow text-cfa-navy font-bold py-3 rounded-lg hover:bg-cfa-yellow-hover transition-colors"
+          className="w-full bg-cfa-blue text-white font-semibold py-3 rounded-lg hover:bg-cfa-blue-hover transition-colors"
         >
           Inloggen
         </button>

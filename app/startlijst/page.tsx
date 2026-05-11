@@ -94,30 +94,30 @@ export default function StartlijstPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-xl text-gray-400">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+        <div className="text-xl text-gray-500">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="bg-cfa-navy/90 border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-200 flex flex-col">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-4">
           <Link href="/">
             <Image
-              src="/logo-hyrox.png"
+              src="/logo_dark.png"
               alt="CrossFit Alkmaar"
               width={120}
               height={60}
             />
           </Link>
-          <div className="h-10 w-px bg-white/20" />
+          <div className="h-10 w-px bg-gray-300" />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              <span className="text-cfa-yellow">STARTLIJST</span>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              STARTLIJST
             </h1>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               CrossFit Alkmaar &mdash; 30 mei 2026
             </p>
           </div>
@@ -129,10 +129,10 @@ export default function StartlijstPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Zoek op naam of startnummer..."
-              className="w-full bg-black/30 border border-white/10 rounded-full px-5 py-2.5 pr-24 focus:outline-none focus:border-cfa-yellow"
+              className="w-full bg-gray-50 border border-gray-300 rounded-lg px-5 py-2.5 pr-24 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20"
             />
             {hasSearch && (
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500">
                 {matchCount} {matchCount === 1 ? "resultaat" : "resultaten"}
               </span>
             )}
@@ -144,10 +144,10 @@ export default function StartlijstPage() {
         {sortedHeats.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">&#128197;</div>
-            <p className="text-2xl text-gray-500">
+            <p className="text-2xl text-gray-600">
               De heat-indeling is nog niet beschikbaar.
             </p>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-500 mt-2">
               Kom binnenkort terug.
             </p>
           </div>
@@ -163,28 +163,28 @@ export default function StartlijstPage() {
               return (
                 <section
                   key={heat.id}
-                  className={`bg-cfa-navy/60 border rounded-2xl overflow-hidden transition-colors ${
+                  className={`bg-white border rounded-lg shadow-sm overflow-hidden transition-colors ${
                     heatHasMatch
-                      ? "border-cfa-yellow/60"
-                      : "border-white/10"
+                      ? "border-cfa-blue ring-2 ring-cfa-blue/20"
+                      : "border-gray-200"
                   }`}
                 >
-                  <div className="bg-cfa-navy/80 px-6 py-3 flex items-center justify-between border-b border-white/10">
+                  <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-b border-gray-200">
                     <div className="flex items-center gap-4">
-                      <div className="text-cfa-yellow font-bold text-xl">
+                      <div className="text-cfa-blue font-bold text-xl">
                         Heat {heat.heatNumber}
                       </div>
-                      <div className="text-3xl font-mono font-bold text-white">
+                      <div className="text-3xl font-mono font-bold text-gray-900">
                         {heatStartTime(heat)}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-gray-500">
                       {heatParticipants.length}{" "}
                       {heatParticipants.length === 1 ? "deelnemer" : "deelnemers"}
                     </div>
                   </div>
 
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-gray-100">
                     {heatParticipants.map((p) => {
                       const matched = isMatch(p);
                       return (
@@ -192,26 +192,26 @@ export default function StartlijstPage() {
                           key={p.id}
                           className={`px-6 py-3 flex items-center gap-4 transition-colors ${
                             matched
-                              ? "bg-cfa-yellow/15"
-                              : "hover:bg-white/5"
+                              ? "bg-cfa-blue/10"
+                              : "hover:bg-gray-50"
                           }`}
                         >
-                          <div className="text-cfa-yellow font-mono font-bold text-lg w-14">
+                          <div className="text-cfa-blue font-mono font-bold text-lg w-14">
                             #{p.startNumber}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">
+                            <div className="font-medium text-gray-900 truncate">
                               {p.name}
                               {p.partnerName && (
-                                <span className="text-gray-300 font-normal">
+                                <span className="text-gray-700 font-normal">
                                   {" "}& {p.partnerName}
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="text-sm text-gray-400 whitespace-nowrap">
+                          <div className="text-sm text-gray-600 whitespace-nowrap">
                             {DIVISION_LABELS[p.division]}{" "}
-                            <span className="text-gray-500">
+                            <span className="text-gray-400">
                               &middot; {CATEGORY_LABELS[p.category]}
                             </span>
                           </div>

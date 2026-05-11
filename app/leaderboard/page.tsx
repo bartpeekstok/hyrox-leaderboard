@@ -148,46 +148,46 @@ export default function LeaderboardPage() {
 
   function getMedalColor(rank: number): string {
     switch (rank) {
-      case 1: return "text-yellow-400";
-      case 2: return "text-gray-300";
-      case 3: return "text-amber-600";
-      default: return "text-gray-500";
+      case 1: return "text-yellow-500";
+      case 2: return "text-gray-500";
+      case 3: return "text-amber-700";
+      default: return "text-gray-400";
     }
   }
 
   function getMedalBg(rank: number): string {
     switch (rank) {
-      case 1: return "bg-yellow-400/10 border-yellow-400/30";
-      case 2: return "bg-gray-300/10 border-gray-300/20";
-      case 3: return "bg-amber-600/10 border-amber-600/20";
-      default: return "bg-white/5 border-white/5";
+      case 1: return "bg-yellow-50 border-yellow-300";
+      case 2: return "bg-gray-50 border-gray-300";
+      case 3: return "bg-amber-50 border-amber-300";
+      default: return "bg-white border-gray-200";
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-xl text-gray-400">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+        <div className="text-xl text-gray-500">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gray-200 flex flex-col">
       {/* Header */}
-      <header className="bg-cfa-navy/90 border-b border-white/10 px-8 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Link href="/">
             <Image
-              src="/logo-hyrox.png"
+              src="/logo_dark.png"
               alt="CrossFit Alkmaar"
               width={160}
               height={80}
             />
           </Link>
-          <div className="h-10 w-px bg-white/20" />
-          <h1 className="text-3xl font-bold tracking-tight">
-            HYROX <span className="text-cfa-yellow">LEADERBOARD</span>
+          <div className="h-10 w-px bg-gray-300" />
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            HYROX <span className="text-cfa-blue">LEADERBOARD</span>
           </h1>
         </div>
         <div className="flex items-center gap-6">
@@ -195,23 +195,23 @@ export default function LeaderboardPage() {
             <div className="text-4xl font-mono font-bold text-cfa-green">
               {totalRacing}
             </div>
-            <div className="text-xs text-gray-400 uppercase tracking-wider">
+            <div className="text-xs text-gray-500 uppercase tracking-wider">
               onderweg
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-mono font-bold text-cfa-yellow">
+            <div className="text-4xl font-mono font-bold text-cfa-blue">
               {totalFinished}
             </div>
-            <div className="text-xs text-gray-400 uppercase tracking-wider">
+            <div className="text-xs text-gray-500 uppercase tracking-wider">
               gefinisht
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-mono font-bold text-white/40">
+            <div className="text-4xl font-mono font-bold text-gray-400">
               {totalParticipants}
             </div>
-            <div className="text-xs text-gray-400 uppercase tracking-wider">
+            <div className="text-xs text-gray-500 uppercase tracking-wider">
               totaal
             </div>
           </div>
@@ -219,30 +219,30 @@ export default function LeaderboardPage() {
       </header>
 
       {/* View title bar with controls */}
-      <div className="bg-cfa-navy/60 px-8 py-3 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-cfa-yellow uppercase tracking-wider">
+      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-cfa-blue uppercase tracking-wider">
           {view === "feed" ? "Laatste finishers" : "Klassement"}
         </h2>
         <div className="flex items-center gap-3">
           {/* View toggle (admin only) */}
           {!PUBLIC_ONLY && (
-            <div className="flex bg-white/5 rounded-full p-0.5">
+            <div className="flex bg-gray-100 rounded-lg p-0.5">
               <button
                 onClick={() => setView("ranking")}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
                   view === "ranking"
-                    ? "bg-cfa-yellow text-cfa-navy"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-cfa-blue text-white"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 Klassement
               </button>
               <button
                 onClick={() => setView("feed")}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
                   view === "feed"
-                    ? "bg-cfa-yellow text-cfa-navy"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-cfa-blue text-white"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 Laatste finishers
@@ -253,10 +253,10 @@ export default function LeaderboardPage() {
           {view === "ranking" && (
             <button
               onClick={() => setAutoRotate(!autoRotate)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
                 autoRotate
-                  ? "bg-cfa-green/20 text-cfa-green"
-                  : "bg-white/5 text-gray-500 hover:bg-white/10"
+                  ? "bg-cfa-green/15 text-cfa-green"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
               }`}
             >
               Auto {autoRotate ? "AAN" : "UIT"}
@@ -264,7 +264,7 @@ export default function LeaderboardPage() {
           )}
           <button
             onClick={toggleFullscreen}
-            className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-gray-400 hover:bg-white/10 transition-colors"
+            className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
           >
             {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
           </button>
@@ -273,7 +273,7 @@ export default function LeaderboardPage() {
 
       {/* Filter pills (only in ranking view) */}
       {view === "ranking" && availableFilters.length > 1 && (
-        <div className="bg-cfa-navy/40 border-t border-white/5 px-8 py-3 flex flex-wrap items-center gap-2">
+        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex flex-wrap items-center gap-2">
           {availableFilters.map((f) => (
             <button
               key={f}
@@ -281,10 +281,10 @@ export default function LeaderboardPage() {
                 setFilter(f);
                 setAutoRotate(false);
               }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
                 filter === f
-                  ? "bg-cfa-yellow text-cfa-navy"
-                  : "bg-white/5 text-gray-300 hover:bg-white/10"
+                  ? "bg-cfa-blue text-white"
+                  : "bg-white border border-gray-200 text-gray-700 hover:border-cfa-blue/40"
               }`}
             >
               {getFilterLabel(f)}
@@ -315,13 +315,13 @@ export default function LeaderboardPage() {
               {racingParticipants.map((p) => (
                 <div
                   key={p.id}
-                  className="bg-cfa-yellow/5 border border-cfa-yellow/20 rounded-lg px-4 py-2 flex items-center justify-between"
+                  className="bg-white border border-cfa-green/40 shadow-sm rounded-lg px-4 py-2 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-cfa-yellow font-mono font-bold text-lg">
+                    <span className="text-cfa-blue font-mono font-bold text-lg">
                       #{p.startNumber}
                     </span>
-                    <span className="font-medium truncate">
+                    <span className="font-medium text-gray-900 truncate">
                       {p.name}
                       {p.partnerName && (
                         <span>
@@ -330,7 +330,7 @@ export default function LeaderboardPage() {
                       )}
                     </span>
                   </div>
-                  <span className="font-mono text-cfa-yellow text-lg ml-2">
+                  <span className="font-mono text-cfa-green font-bold text-lg ml-2">
                     {p.startTime ? formatTime(now - p.startTime) : "--:--"}
                   </span>
                 </div>
@@ -346,7 +346,7 @@ export default function LeaderboardPage() {
             return (
               <div
                 key={p.id}
-                className={`${getMedalBg(rank)} border rounded-xl px-6 py-4 flex items-center gap-5 animate-slide-in`}
+                className={`${getMedalBg(rank)} border shadow-sm rounded-lg px-6 py-4 flex items-center gap-5 animate-slide-in`}
               >
                 {/* Rank */}
                 <div
@@ -356,13 +356,13 @@ export default function LeaderboardPage() {
                 </div>
 
                 {/* Number */}
-                <div className="text-cfa-yellow font-mono font-bold text-2xl w-16">
+                <div className="text-cfa-blue font-mono font-bold text-2xl w-16">
                   #{p.startNumber}
                 </div>
 
                 {/* Name & Category */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-2xl truncate">
+                  <div className="font-bold text-2xl text-gray-900 truncate">
                     {p.name}
                     {p.partnerName && (
                       <span className="font-normal">
@@ -381,7 +381,7 @@ export default function LeaderboardPage() {
                 <div className="text-right">
                   <div
                     className={`font-mono font-bold text-3xl ${
-                      rank <= 3 ? getMedalColor(rank) : "text-white"
+                      rank <= 3 ? getMedalColor(rank) : "text-gray-900"
                     }`}
                   >
                     {p.totalTime ? formatTime(p.totalTime) : "--:--"}
@@ -412,7 +412,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Footer: recent finishes ticker + clock */}
-      <footer className="bg-cfa-navy/90 border-t border-white/10 px-8 py-3 flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-200 px-8 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {view === "ranking" ? (
             <>
@@ -421,17 +421,17 @@ export default function LeaderboardPage() {
               </span>
               <div className="flex gap-4 overflow-hidden">
                 {recentFinishes.map((p) => (
-                  <span key={p.id} className="text-sm text-gray-400 whitespace-nowrap">
-                    <span className="text-cfa-yellow font-mono font-bold">#{p.startNumber}</span>
+                  <span key={p.id} className="text-sm text-gray-700 whitespace-nowrap">
+                    <span className="text-cfa-blue font-mono font-bold">#{p.startNumber}</span>
                     {" "}{p.name}
                     {" "}
-                    <span className="text-cfa-green font-mono">
+                    <span className="text-cfa-green font-mono font-semibold">
                       {p.totalTime ? formatTime(p.totalTime) : ""}
                     </span>
                   </span>
                 ))}
                 {recentFinishes.length === 0 && (
-                  <span className="text-sm text-gray-600">Nog geen finishers</span>
+                  <span className="text-sm text-gray-400">Nog geen finishers</span>
                 )}
               </div>
             </>
@@ -439,9 +439,9 @@ export default function LeaderboardPage() {
         </div>
         <div className="flex items-center gap-4 ml-4">
           <span className="text-sm text-gray-500">
-            CrossFit Alkmaar - 30 mei 2026
+            CrossFit Alkmaar &mdash; 30 mei 2026
           </span>
-          <span className="font-mono text-lg text-white/60">
+          <span className="font-mono text-lg text-gray-600">
             {new Date().toLocaleTimeString("nl-NL", {
               hour: "2-digit",
               minute: "2-digit",
@@ -518,12 +518,10 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
       {latest.map((p, i) => {
           const isNew = newIds.has(p.id);
           const divisionLabel = DIVISION_LABELS[p.division].toUpperCase();
-          const divisionColor =
-            p.division === "pro" ? "text-cfa-yellow" : "text-cfa-green";
-          const divisionBg =
+          const divisionClasses =
             p.division === "pro"
-              ? "bg-cfa-yellow/15 border-cfa-yellow/40"
-              : "bg-cfa-green/15 border-cfa-green/40";
+              ? "bg-cfa-blue text-white"
+              : "bg-cfa-green text-white";
           return (
             <div
               key={p.id}
@@ -533,26 +531,26 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
               style={{ top: i * (rowHeight + FEED_GAP), height: rowHeight }}
             >
               <div
-                className={`h-full bg-white/5 border border-white/10 rounded-xl px-8 flex items-center gap-6 ${
+                className={`h-full bg-white border border-gray-200 shadow-sm rounded-lg px-8 flex items-center gap-6 ${
                   isNew ? "animate-flash-glow" : ""
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-4xl truncate">
+                  <div className="font-bold text-4xl text-gray-900 truncate">
                     {p.name}
                     {p.partnerName && (
-                      <span className="font-normal text-gray-300">
+                      <span className="font-normal text-gray-600">
                         {" "}& {p.partnerName}
                       </span>
                     )}
                   </div>
                 </div>
                 <div
-                  className={`px-4 py-1.5 rounded-full border ${divisionBg} ${divisionColor} font-bold uppercase tracking-wider text-lg`}
+                  className={`px-4 py-1.5 rounded-lg ${divisionClasses} font-bold uppercase tracking-wider text-lg`}
                 >
                   {divisionLabel}
                 </div>
-                <div className="font-mono font-bold text-5xl text-white tabular-nums w-56 text-right">
+                <div className="font-mono font-bold text-5xl text-cfa-blue tabular-nums w-56 text-right">
                   {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                 </div>
               </div>
