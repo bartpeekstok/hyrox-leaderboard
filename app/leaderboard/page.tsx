@@ -294,7 +294,13 @@ export default function LeaderboardPage() {
       )}
 
       {/* Leaderboard content */}
-      <div className="flex-1 px-8 py-4 leaderboard-scroll overflow-y-auto">
+      <div
+        className={`flex-1 px-8 py-4 ${
+          view === "feed"
+            ? "overflow-hidden"
+            : "leaderboard-scroll overflow-y-auto"
+        }`}
+      >
         {view === "feed" ? (
           <LatestFinishersFeed participants={participants} />
         ) : (
@@ -449,7 +455,8 @@ export default function LeaderboardPage() {
 }
 
 const FEED_SIZE = 10;
-const ROW_HEIGHT = 92; // px
+const FEED_GAP = 8; // px between rows
+const MIN_ROW_HEIGHT = 56;
 
 function LatestFinishersFeed({ participants }: { participants: Participant[] }) {
   const latest = useMemo(
@@ -474,6 +481,24 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
     prevIdsRef.current = new Set(latest.map((p) => p.id));
   }, [latest]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    const update = () => setContainerHeight(el.clientHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const rowHeight = Math.max(
+    MIN_ROW_HEIGHT,
+    Math.floor((containerHeight - FEED_GAP * (FEED_SIZE - 1)) / FEED_SIZE)
+  );
+
   if (latest.length === 0) {
     return (
       <div className="text-center py-20">
@@ -486,54 +511,52 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
   }
 
   return (
-    <div
-      className="relative"
-      style={{ height: ROW_HEIGHT * FEED_SIZE + (FEED_SIZE - 1) * 8 }}
-    >
-      {latest.map((p, i) => {
-        const isNew = newIds.has(p.id);
-        const divisionLabel = DIVISION_LABELS[p.division].toUpperCase();
-        const divisionColor =
-          p.division === "pro" ? "text-cfa-yellow" : "text-cfa-green";
-        const divisionBg =
-          p.division === "pro"
-            ? "bg-cfa-yellow/15 border-cfa-yellow/40"
-            : "bg-cfa-green/15 border-cfa-green/40";
-        return (
-          <div
-            key={p.id}
-            className={`absolute left-0 right-0 transition-all duration-700 ease-out ${
-              isNew ? "animate-slide-in-top" : ""
-            }`}
-            style={{ top: i * (ROW_HEIGHT + 8), height: ROW_HEIGHT }}
-          >
+    <div ref={containerRef} className="relative h-full">
+      {containerHeight > 0 &&
+        latest.map((p, i) => {
+          const isNew = newIds.has(p.id);
+          const divisionLabel = DIVISION_LABELS[p.division].toUpperCase();
+          const divisionColor =
+            p.division === "pro" ? "text-cfa-yellow" : "text-cfa-green";
+          const divisionBg =
+            p.division === "pro"
+              ? "bg-cfa-yellow/15 border-cfa-yellow/40"
+              : "bg-cfa-green/15 border-cfa-green/40";
+          return (
             <div
-              className={`h-full bg-white/5 border border-white/10 rounded-xl px-8 flex items-center gap-6 ${
-                isNew ? "animate-flash-glow" : ""
+              key={p.id}
+              className={`absolute left-0 right-0 transition-all duration-700 ease-out ${
+                isNew ? "animate-slide-in-top" : ""
               }`}
+              style={{ top: i * (rowHeight + FEED_GAP), height: rowHeight }}
             >
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-4xl truncate">
-                  {p.name}
-                  {p.partnerName && (
-                    <span className="font-normal text-gray-300">
-                      {" "}& {p.partnerName}
-                    </span>
-                  )}
+              <div
+                className={`h-full bg-white/5 border border-white/10 rounded-xl px-8 flex items-center gap-6 ${
+                  isNew ? "animate-flash-glow" : ""
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-4xl truncate">
+                    {p.name}
+                    {p.partnerName && (
+                      <span className="font-normal text-gray-300">
+                        {" "}& {p.partnerName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div
+                  className={`px-4 py-1.5 rounded-full border ${divisionBg} ${divisionColor} font-bold uppercase tracking-wider text-lg`}
+                >
+                  {divisionLabel}
+                </div>
+                <div className="font-mono font-bold text-5xl text-white tabular-nums w-56 text-right">
+                  {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                 </div>
               </div>
-              <div
-                className={`px-4 py-1.5 rounded-full border ${divisionBg} ${divisionColor} font-bold uppercase tracking-wider text-lg`}
-              >
-                {divisionLabel}
-              </div>
-              <div className="font-mono font-bold text-5xl text-white tabular-nums w-56 text-right">
-                {p.totalTime ? formatTime(p.totalTime) : "--:--"}
-              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 }
