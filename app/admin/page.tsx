@@ -504,7 +504,7 @@ export default function AdminPage() {
                       {heatParticipants.map((p) => (
                         <div
                           key={p.id}
-                          className="text-sm text-gray-300 flex justify-between"
+                          className="text-sm text-gray-900 flex justify-between"
                         >
                           <span>
                             <span className="text-cfa-blue font-mono font-bold mr-2">
@@ -545,13 +545,13 @@ export default function AdminPage() {
                         .map((p) => (
                           <div
                             key={p.id}
-                            className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 group"
+                            className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 group"
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-cfa-blue font-mono font-bold text-sm w-8">
                                 #{p.startNumber}
                               </span>
-                              <span className="text-sm font-medium">
+                              <span className="text-sm font-medium text-gray-900">
                                 {p.name}
                                 {p.partnerName && (
                                   <span>

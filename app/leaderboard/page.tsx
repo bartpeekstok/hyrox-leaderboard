@@ -539,7 +539,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                   <div className="font-bold text-4xl text-gray-900 truncate">
                     {p.name}
                     {p.partnerName && (
-                      <span className="font-normal text-gray-600">
+                      <span className="font-normal">
                         {" "}& {p.partnerName}
                       </span>
                     )}

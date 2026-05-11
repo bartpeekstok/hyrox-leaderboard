@@ -153,7 +153,30 @@ export default function StartlijstPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {sortedHeats.map((heat) => {
+            {(() => {
+              const visibleHeats = sortedHeats.filter((heat) => {
+                if (!hasSearch) return true;
+                return heat.participantIds
+                  .map((id) => participantById.get(id))
+                  .filter((p): p is Participant => Boolean(p))
+                  .some(isMatch);
+              });
+
+              if (hasSearch && visibleHeats.length === 0) {
+                return (
+                  <div className="text-center py-20 bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <div className="text-5xl mb-4">&#128269;</div>
+                    <p className="text-xl text-gray-700 font-medium">
+                      Geen deelnemer gevonden voor &ldquo;{search}&rdquo;
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Probeer een andere naam of startnummer.
+                    </p>
+                  </div>
+                );
+              }
+
+              return visibleHeats.map((heat) => {
               const heatParticipants = heat.participantIds
                 .map((id) => participantById.get(id))
                 .filter((p): p is Participant => Boolean(p));
@@ -203,7 +226,7 @@ export default function StartlijstPage() {
                             <div className="font-medium text-gray-900 truncate">
                               {p.name}
                               {p.partnerName && (
-                                <span className="text-gray-700 font-normal">
+                                <span className="font-normal">
                                   {" "}& {p.partnerName}
                                 </span>
                               )}
@@ -226,7 +249,8 @@ export default function StartlijstPage() {
                   </div>
                 </section>
               );
-            })}
+            });
+            })()}
           </div>
         )}
       </main>
