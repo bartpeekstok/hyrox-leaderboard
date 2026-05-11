@@ -175,43 +175,44 @@ export default function LeaderboardPage() {
   return (
     <div className="h-screen bg-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-8 py-4 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-5">
-          <Link href="/">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 flex-shrink-0">
+        <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+          <Link href="/" className="shrink-0">
             <Image
               src="/logo_dark.png"
               alt="CrossFit Alkmaar"
               width={160}
               height={80}
+              className="w-20 sm:w-[160px] h-auto"
             />
           </Link>
-          <div className="h-10 w-px bg-gray-300" />
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <div className="hidden sm:block h-10 w-px bg-gray-300" />
+          <h1 className="text-base sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
             HYROX <span className="text-cfa-blue">LEADERBOARD</span>
           </h1>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6 shrink-0">
           <div className="text-center">
-            <div className="text-4xl font-mono font-bold text-cfa-green">
+            <div className="text-xl sm:text-4xl font-mono font-bold text-cfa-green leading-none">
               {totalRacing}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
               onderweg
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-mono font-bold text-cfa-blue">
+            <div className="text-xl sm:text-4xl font-mono font-bold text-cfa-blue leading-none">
               {totalFinished}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
               gefinisht
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-mono font-bold text-gray-400">
+            <div className="text-xl sm:text-4xl font-mono font-bold text-gray-400 leading-none">
               {totalParticipants}
             </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider">
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
               totaal
             </div>
           </div>
@@ -219,8 +220,8 @@ export default function LeaderboardPage() {
       </header>
 
       {/* View title bar with controls */}
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between flex-shrink-0">
-        <h2 className="text-2xl font-bold text-cfa-blue uppercase tracking-wider">
+      <div className="bg-white border-b border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex items-center justify-between gap-2 flex-shrink-0">
+        <h2 className="text-base sm:text-2xl font-bold text-cfa-blue uppercase tracking-wider truncate">
           {view === "feed" ? "Laatste finishers" : "Klassement"}
         </h2>
         <div className="flex items-center gap-3">
@@ -273,7 +274,7 @@ export default function LeaderboardPage() {
 
       {/* Filter pills (only in ranking view) */}
       {view === "ranking" && availableFilters.length > 1 && (
-        <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex flex-wrap items-center gap-2 flex-shrink-0">
+        <div className="bg-gray-50 border-b border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex gap-2 overflow-x-auto sm:flex-wrap sm:items-center flex-shrink-0">
           {availableFilters.map((f) => (
             <button
               key={f}
@@ -281,7 +282,7 @@ export default function LeaderboardPage() {
                 setFilter(f);
                 setAutoRotate(false);
               }}
-              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+              className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors ${
                 filter === f
                   ? "bg-cfa-blue text-white"
                   : "bg-white border border-gray-200 text-gray-700 hover:border-cfa-blue/40"
@@ -295,7 +296,7 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard content */}
       <div
-        className={`flex-1 min-h-0 px-8 py-4 ${
+        className={`flex-1 min-h-0 px-3 sm:px-8 py-3 sm:py-4 ${
           view === "feed"
             ? "overflow-hidden"
             : "leaderboard-scroll overflow-y-auto"
@@ -311,14 +312,14 @@ export default function LeaderboardPage() {
             <div className="text-sm text-cfa-green font-semibold uppercase tracking-wider mb-2">
               Onderweg ({racingParticipants.length})
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
               {racingParticipants.map((p) => (
                 <div
                   key={p.id}
-                  className="bg-white border border-cfa-green/40 shadow-sm rounded-lg px-4 py-2 flex items-center justify-between"
+                  className="bg-white border border-cfa-green/40 shadow-sm rounded-lg px-3 sm:px-4 py-2 flex items-center justify-between gap-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-cfa-blue font-mono font-bold text-lg">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-cfa-blue font-mono font-bold text-base sm:text-lg shrink-0">
                       #{p.startNumber}
                     </span>
                     <span className="font-medium text-gray-900 truncate">
@@ -330,7 +331,7 @@ export default function LeaderboardPage() {
                       )}
                     </span>
                   </div>
-                  <span className="font-mono text-cfa-green font-bold text-lg ml-2">
+                  <span className="font-mono text-cfa-green font-bold text-base sm:text-lg shrink-0">
                     {p.startTime ? formatTime(now - p.startTime) : "--:--"}
                   </span>
                 </div>
@@ -346,37 +347,37 @@ export default function LeaderboardPage() {
             return (
               <div
                 key={p.id}
-                className={`${getMedalBg(rank)} border shadow-sm rounded-lg px-6 py-4 flex items-center gap-5 animate-slide-in`}
+                className={`${getMedalBg(rank)} border shadow-sm rounded-lg px-3 sm:px-6 py-2 sm:py-4 flex items-center gap-2 sm:gap-5 animate-slide-in`}
               >
                 {/* Rank */}
                 <div
-                  className={`w-12 text-center font-bold text-3xl ${getMedalColor(rank)}`}
+                  className={`w-8 sm:w-12 text-center font-bold text-xl sm:text-3xl shrink-0 ${getMedalColor(rank)}`}
                 >
                   {rank}
                 </div>
 
                 {/* Number */}
-                <div className="text-cfa-blue font-mono font-bold text-2xl w-16">
+                <div className="text-cfa-blue font-mono font-bold text-base sm:text-2xl w-12 sm:w-16 shrink-0">
                   #{p.startNumber}
                 </div>
 
                 {/* Name & Category */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-2xl text-gray-900 truncate">
+                  <div className="font-bold text-base sm:text-2xl text-gray-900 truncate">
                     {p.name}
                     {p.partnerName && <span>{" "}& {p.partnerName}</span>}
                   </div>
                   {filter === "all" && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs sm:text-sm text-gray-500 truncate">
                       {DIVISION_LABELS[p.division]} - {CATEGORY_LABELS[p.category]}
                     </div>
                   )}
                 </div>
 
                 {/* Time */}
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <div
-                    className={`font-mono font-bold text-3xl ${
+                    className={`font-mono font-bold text-lg sm:text-3xl ${
                       rank <= 3 ? getMedalColor(rank) : "text-gray-900"
                     }`}
                   >
@@ -385,7 +386,7 @@ export default function LeaderboardPage() {
                   {rank > 1 &&
                     finishedParticipants[0].totalTime &&
                     p.totalTime && (
-                      <div className="text-sm text-gray-500 font-mono">
+                      <div className="text-[10px] sm:text-sm text-gray-500 font-mono">
                         +{formatTime(p.totalTime - finishedParticipants[0].totalTime)}
                       </div>
                     )}
@@ -408,7 +409,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Footer: recent finishes ticker + clock */}
-      <footer className="bg-white border-t border-gray-200 px-8 py-3 flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {view === "ranking" ? (
             <>
@@ -433,11 +434,11 @@ export default function LeaderboardPage() {
             </>
           ) : null}
         </div>
-        <div className="flex items-center gap-4 ml-4">
-          <span className="text-sm text-gray-500">
+        <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-4 shrink-0">
+          <span className="hidden sm:inline text-sm text-gray-500">
             CrossFit Alkmaar &mdash; 30 mei 2026
           </span>
-          <span className="font-mono text-lg text-gray-600">
+          <span className="font-mono text-sm sm:text-lg text-gray-600">
             {new Date().toLocaleTimeString("nl-NL", {
               hour: "2-digit",
               minute: "2-digit",
