@@ -59,8 +59,7 @@ function getActiveWissels(
       currentBlock !== null &&
       nextBlock !== null &&
       currentBlock !== nextBlock &&
-      (current.status === "racing" || current.status === "finished") &&
-      next.status === "scheduled"
+      (current.status === "racing" || current.status === "finished")
     ) {
       // Verify this is the LAST heat of currentBlock (no later heats in same block)
       const hasLaterInSameBlock = sorted
