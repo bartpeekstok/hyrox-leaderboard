@@ -502,20 +502,12 @@ export default function AdminPage() {
                         </span>
                       </div>
                       {heatParticipants.map((p) => (
-                        <div
-                          key={p.id}
-                          className="text-sm text-gray-900 flex justify-between"
-                        >
-                          <span>
-                            <span className="text-cfa-blue font-mono font-bold mr-2">
-                              #{p.startNumber}
-                            </span>
-                            {p.name}
-                            {p.partnerName && ` & ${p.partnerName}`}
+                        <div key={p.id} className="text-sm text-gray-900">
+                          <span className="text-cfa-blue font-mono font-bold mr-2">
+                            #{p.startNumber}
                           </span>
-                          <span className="text-gray-500 text-xs">
-                            {DIVISION_LABELS[p.division]} - {p.estimatedTime}m
-                          </span>
+                          {p.name}
+                          {p.partnerName && ` & ${p.partnerName}`}
                         </div>
                       ))}
                     </div>
