@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, useLayoutEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -482,12 +482,15 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
   }, [latest]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerHeight, setContainerHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(800);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
-    const update = () => setContainerHeight(el.clientHeight);
+    const update = () => {
+      const h = el.clientHeight;
+      if (h > 0) setContainerHeight(h);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -512,8 +515,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
 
   return (
     <div ref={containerRef} className="relative h-full">
-      {containerHeight > 0 &&
-        latest.map((p, i) => {
+      {latest.map((p, i) => {
           const isNew = newIds.has(p.id);
           const divisionLabel = DIVISION_LABELS[p.division].toUpperCase();
           const divisionColor =
