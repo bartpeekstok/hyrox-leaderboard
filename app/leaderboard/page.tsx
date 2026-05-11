@@ -25,8 +25,9 @@ export default function LeaderboardPage() {
   const [view, setView] = useState<View>("ranking");
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
-  const [autoRotate, setAutoRotate] = useState(true); // ON by default for TV
+  const [autoRotate, setAutoRotate] = useState(!PUBLIC_ONLY);
   const filtersRef = useRef<FilterKey[]>(["all"]);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -79,6 +80,16 @@ export default function LeaderboardPage() {
 
     return () => clearInterval(interval);
   }, [autoRotate, view]);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }
 
   function getAvailableFilters(): FilterKey[] {
     const filters: FilterKey[] = ["all"];
@@ -180,10 +191,10 @@ export default function LeaderboardPage() {
             <h1 className="text-lg sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
               HYROX <span className="text-cfa-blue">LEADERBOARD</span>
             </h1>
-            <p className="text-xs text-gray-500 truncate leading-tight sm:hidden">
+            <p className="text-xs text-gray-500 truncate leading-tight">
               CrossFit Alkmaar
             </p>
-            <p className="text-xs text-gray-500 truncate leading-tight sm:hidden">
+            <p className="text-xs text-gray-500 truncate leading-tight">
               30 mei 2026
             </p>
           </div>
@@ -248,6 +259,26 @@ export default function LeaderboardPage() {
             </div>
           )}
 
+          {!PUBLIC_ONLY && view === "ranking" && (
+            <button
+              onClick={() => setAutoRotate(!autoRotate)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                autoRotate
+                  ? "bg-cfa-green/15 text-cfa-green"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              Auto {autoRotate ? "AAN" : "UIT"}
+            </button>
+          )}
+          {!PUBLIC_ONLY && (
+            <button
+              onClick={toggleFullscreen}
+              className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            </button>
+          )}
         </div>
       </div>
 
