@@ -16,9 +16,15 @@ import { Participant, Heat, Category, Division } from './types';
  * Between blocks: sled weight change.
  */
 
-type SledBlock = 1 | 2 | 3;
+export type SledBlock = 1 | 2 | 3;
 
-function getSledBlock(division: Division, category: Category): SledBlock {
+export const SLED_BLOCK_WEIGHTS: Record<SledBlock, { label: string; men: number; women: number }> = {
+  1: { label: '202/153 kg', men: 202, women: 153 },
+  2: { label: '152/103 kg', men: 152, women: 103 },
+  3: { label: '102/78 kg', men: 102, women: 78 },
+};
+
+export function getSledBlock(division: Division, category: Category): SledBlock {
   // Block 1: Pro Men, Duo MM Pro (202/153 kg)
   if (division === 'pro' && (category === 'single_men' || category === 'duo_mm')) {
     return 1;

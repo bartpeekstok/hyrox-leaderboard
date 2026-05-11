@@ -17,6 +17,70 @@ import {
   finishParticipant as finishParticipantDb,
 } from "../lib/store";
 import { supabase } from "../lib/supabase";
+import { getSledBlock, SledBlock, SLED_BLOCK_WEIGHTS } from "../lib/heat-scheduler";
+
+const BLOCK_STYLES: Record<SledBlock, { badge: string; label: string }> = {
+  1: { badge: "bg-red-500/15 text-red-700 border border-red-500/30", label: "Blok 1" },
+  2: { badge: "bg-cfa-yellow/15 text-amber-700 border border-cfa-yellow/30", label: "Blok 2" },
+  3: { badge: "bg-cfa-green/15 text-emerald-700 border border-cfa-green/30", label: "Blok 3" },
+};
+
+function getHeatBlock(heat: Heat, participants: Participant[]): SledBlock | null {
+  const firstId = heat.participantIds[0];
+  if (!firstId) return null;
+  const p = participants.find((pp) => pp.id === firstId);
+  if (!p) return null;
+  return getSledBlock(p.division, p.category);
+}
+
+type Wissel = {
+  id: string;
+  fromBlock: SledBlock;
+  toBlock: SledBlock;
+  lastHeatNumber: number;
+  firstNextHeatNumber: number;
+  firstNextHeatTime: string;
+};
+
+function getActiveWissels(
+  heats: Heat[],
+  participants: Participant[]
+): Wissel[] {
+  const sorted = [...heats].sort((a, b) => a.heatNumber - b.heatNumber);
+  const wissels: Wissel[] = [];
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const current = sorted[i];
+    const next = sorted[i + 1];
+    const currentBlock = getHeatBlock(current, participants);
+    const nextBlock = getHeatBlock(next, participants);
+
+    if (
+      currentBlock !== null &&
+      nextBlock !== null &&
+      currentBlock !== nextBlock &&
+      (current.status === "racing" || current.status === "finished") &&
+      next.status === "scheduled"
+    ) {
+      // Verify this is the LAST heat of currentBlock (no later heats in same block)
+      const hasLaterInSameBlock = sorted
+        .slice(i + 1)
+        .some((h) => getHeatBlock(h, participants) === currentBlock);
+      if (hasLaterInSameBlock) continue;
+
+      wissels.push({
+        id: `wissel_${currentBlock}_to_${nextBlock}`,
+        fromBlock: currentBlock,
+        toBlock: nextBlock,
+        lastHeatNumber: current.heatNumber,
+        firstNextHeatNumber: next.heatNumber,
+        firstNextHeatTime: next.scheduledTime,
+      });
+    }
+  }
+
+  return wissels;
+}
 
 export default function RaceControlPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -31,6 +95,33 @@ export default function RaceControlPage() {
     type: "success" | "error";
   } | null>(null);
   const finishInputRef = useRef<HTMLInputElement>(null);
+
+  // Dismissed wissels (persisted in localStorage)
+  const [dismissedWissels, setDismissedWissels] = useState<Set<string>>(
+    new Set()
+  );
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("dismissedWissels");
+      if (raw) setDismissedWissels(new Set(JSON.parse(raw)));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function dismissWissel(id: string) {
+    setDismissedWissels((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        localStorage.setItem("dismissedWissels", JSON.stringify([...next]));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }
 
   const fetchData = useCallback(async () => {
     try {
@@ -156,6 +247,10 @@ export default function RaceControlPage() {
   const finishedHeats = heats.filter((h) => h.status === "finished");
   const nextHeat = scheduledHeats[0];
 
+  const activeWissels = getActiveWissels(heats, participants).filter(
+    (w) => !dismissedWissels.has(w.id)
+  );
+
   // Preview: show who the finish input would match
   const finishPreview = finishInput
     ? participants.find((p) => p.startNumber === parseInt(finishInput))
@@ -255,14 +350,62 @@ export default function RaceControlPage() {
           )}
         </div>
 
+        {/* Active sled wissels */}
+        {activeWissels.map((w) => (
+          <div
+            key={w.id}
+            className="bg-amber-50 border-2 border-cfa-yellow rounded-xl p-6 shadow-lg"
+          >
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">🔧</div>
+                <div>
+                  <h2 className="text-xl font-bold text-amber-900">
+                    Sled wissel
+                  </h2>
+                  <p className="text-2xl font-mono font-bold text-amber-800 mt-1">
+                    {SLED_BLOCK_WEIGHTS[w.fromBlock].label}
+                    <span className="mx-3 text-amber-600">→</span>
+                    {SLED_BLOCK_WEIGHTS[w.toBlock].label}
+                  </p>
+                  <p className="text-sm text-amber-700 mt-2">
+                    Wisselen zodra deelnemers heat {w.lastHeatNumber} voorbij
+                    de sleds zijn. Eerstvolgende blok-{w.toBlock} heat: heat{" "}
+                    {w.firstNextHeatNumber} om {w.firstNextHeatTime}.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => dismissWissel(w.id)}
+                className="bg-cfa-green hover:bg-emerald-500 text-black font-bold px-6 py-3 rounded-xl transition-colors shadow"
+              >
+                Wissel voltooid
+              </button>
+            </div>
+          </div>
+        ))}
+
         {/* Next Heat to Start */}
         {nextHeat && (
           <div className="bg-white/80 border-2 border-cfa-yellow/30 rounded-xl p-6 animate-pulse-glow">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold">
-                  Volgende: Heat {nextHeat.heatNumber}
-                </h2>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-2xl font-bold">
+                    Volgende: Heat {nextHeat.heatNumber}
+                  </h2>
+                  {(() => {
+                    const block = getHeatBlock(nextHeat, participants);
+                    if (!block) return null;
+                    return (
+                      <span
+                        className={`text-xs font-bold px-2 py-1 rounded-full ${BLOCK_STYLES[block].badge}`}
+                      >
+                        {BLOCK_STYLES[block].label} · {SLED_BLOCK_WEIGHTS[block].label}
+                      </span>
+                    );
+                  })()}
+                </div>
                 <p className="text-cfa-blue text-lg">
                   Gepland om {nextHeat.scheduledTime}
                 </p>
@@ -319,9 +462,20 @@ export default function RaceControlPage() {
                   className="bg-white border border-gray-200 shadow-sm border border-cfa-yellow/20 rounded-xl p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold">
-                      Heat {heat.heatNumber}{" "}
-                      <span className="text-gray-600 text-sm">
+                    <h3 className="font-bold flex items-center gap-2 flex-wrap">
+                      <span>Heat {heat.heatNumber}</span>
+                      {(() => {
+                        const block = getHeatBlock(heat, participants);
+                        if (!block) return null;
+                        return (
+                          <span
+                            className={`text-xs font-bold px-2 py-0.5 rounded-full ${BLOCK_STYLES[block].badge}`}
+                          >
+                            {BLOCK_STYLES[block].label}
+                          </span>
+                        );
+                      })()}
+                      <span className="text-gray-600 text-sm font-normal">
                         gestart om{" "}
                         {heat.startTime
                           ? new Date(heat.startTime).toLocaleTimeString(
