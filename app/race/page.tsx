@@ -247,7 +247,7 @@ export default function RaceControlPage() {
               className={`mt-4 text-center text-lg font-bold py-2 rounded-lg ${
                 finishFeedback.type === "success"
                   ? "bg-cfa-green/20 text-cfa-green"
-                  : "bg-red-500/20 text-red-400"
+                  : "bg-red-50 text-red-700 border border-red-200"
               }`}
             >
               {finishFeedback.message}

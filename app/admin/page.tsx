@@ -251,7 +251,7 @@ export default function AdminPage() {
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Google Sheets URL
                 </label>
                 <input
@@ -299,7 +299,7 @@ export default function AdminPage() {
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Naam
                 </label>
                 <input
@@ -314,7 +314,7 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Divisie
                   </label>
                   <select
@@ -330,7 +330,7 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Categorie
                   </label>
                   <select
@@ -349,7 +349,7 @@ export default function AdminPage() {
 
               {isDuo && (
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Partner naam
                   </label>
                   <input
@@ -363,7 +363,7 @@ export default function AdminPage() {
               )}
 
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Geschatte eindtijd (minuten)
                 </label>
                 <input
@@ -407,7 +407,7 @@ export default function AdminPage() {
             <h2 className="text-lg font-bold mb-4">Heat Instellingen</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Eerste heat start om
                 </label>
                 <input
@@ -418,7 +418,7 @@ export default function AdminPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Interval tussen heats (min)
                 </label>
                 <input
@@ -442,13 +442,13 @@ export default function AdminPage() {
           </div>
 
           {/* Danger zone */}
-          <div className="bg-red-950/30 border border-red-500/20 rounded-xl p-6">
-            <h3 className="text-sm font-bold text-red-400 mb-3">
+          <div className="bg-white border border-red-200 rounded-lg shadow-sm p-6">
+            <h3 className="text-sm font-bold text-red-600 mb-3 uppercase tracking-wider">
               Danger Zone
             </h3>
             <button
               onClick={handleDeleteAll}
-              className="w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 font-semibold py-2 rounded-lg transition-colors text-sm border border-red-500/30"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition-colors text-sm"
             >
               Alle deelnemers verwijderen
             </button>
@@ -580,7 +580,7 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={() => handleDelete(p.id)}
-                                className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30"
+                                className="text-xs px-2 py-1 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100"
                               >
                                 Verwijder
                               </button>
