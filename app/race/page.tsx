@@ -283,10 +283,10 @@ export default function RaceControlPage() {
   return (
     <div className="min-h-screen bg-gray-200">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-4 sm:px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/" className="shrink-0">
               <Image
                 src="/logo_dark.png"
                 alt="CrossFit Alkmaar"
@@ -299,7 +299,7 @@ export default function RaceControlPage() {
               <p className="text-sm text-gray-600">HYROX Race Simulation</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="bg-cfa-blue/20 text-cfa-blue px-3 py-1 rounded-full text-sm font-bold">
               {racingHeats.length} racing
             </div>
