@@ -7,8 +7,8 @@ import {
   Participant,
   Category,
   Division,
-  CATEGORY_LABELS,
-  DIVISION_LABELS,
+  getClassLabel,
+  getRaceClass,
   formatTime,
 } from "../lib/types";
 import { getParticipants } from "../lib/store";
@@ -143,8 +143,7 @@ export default function LeaderboardPage() {
     if (f === "all") return "Alle";
     const [div, ...catParts] = f.split("_");
     const cat = catParts.join("_") as Category;
-    if (cat.startsWith("duo_")) return CATEGORY_LABELS[cat] || cat;
-    return `${DIVISION_LABELS[div as Division]} ${CATEGORY_LABELS[cat] || cat}`;
+    return getClassLabel({ division: div as Division, category: cat });
   }
 
   function getMedalColor(rank: number): string {
@@ -380,9 +379,7 @@ export default function LeaderboardPage() {
                   </div>
                   {filter === "all" && (
                     <div className="text-xs sm:text-sm text-gray-500 truncate">
-                      {p.category.startsWith("duo_")
-                        ? CATEGORY_LABELS[p.category]
-                        : `${DIVISION_LABELS[p.division]} - ${CATEGORY_LABELS[p.category]}`}
+                      {getClassLabel(p)}
                     </div>
                   )}
                 </div>
@@ -527,17 +524,11 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
     <div ref={containerRef} className="relative h-full">
       {latest.map((p, i) => {
           const isNew = newIds.has(p.id);
-          const isDuoP = p.category.startsWith("duo_");
-          const badgeLabel = isDuoP
-            ? p.category === "duo_mm"
-              ? "DUO M/M"
-              : p.category === "duo_ww"
-                ? "DUO V/V"
-                : "DUO M/V"
-            : DIVISION_LABELS[p.division].toUpperCase();
-          const badgeClasses = isDuoP
+          const rc = getRaceClass(p.division, p.category);
+          const badgeLabel = getClassLabel(p).toUpperCase();
+          const badgeClasses = rc.startsWith("doubles_")
             ? "bg-cfa-yellow text-black"
-            : p.division === "pro"
+            : rc.endsWith("_pro")
               ? "bg-cfa-blue text-white"
               : "bg-cfa-green text-white";
           return (

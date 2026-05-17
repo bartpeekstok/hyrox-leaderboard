@@ -7,8 +7,12 @@ import {
   Participant,
   Division,
   Category,
-  CATEGORY_LABELS,
-  DIVISION_LABELS,
+  CLASS_LABELS,
+  RACE_CLASSES,
+  RaceClass,
+  getRaceClass,
+  getClassLabel,
+  classToDivisionCategory,
   Heat,
 } from "../lib/types";
 import { generateHeats } from "../lib/heat-scheduler";
@@ -33,9 +37,9 @@ export default function AdminPage() {
   // Form state
   const [name, setName] = useState("");
   const [partnerName, setPartnerName] = useState("");
-  const [division, setDivision] = useState<Division>("open");
-  const [category, setCategory] = useState<Category>("single_men");
+  const [raceClass, setRaceClass] = useState<RaceClass>("men_open");
   const [estimatedTime, setEstimatedTime] = useState(60);
+  const { division, category } = classToDivisionCategory(raceClass);
 
   // Settings
   const [startTime, setStartTime] = useState("09:00");
@@ -150,8 +154,7 @@ export default function AdminPage() {
     setEditingId(p.id);
     setName(p.name);
     setPartnerName(p.partnerName || "");
-    setDivision(p.division);
-    setCategory(p.category);
+    setRaceClass(getRaceClass(p.division, p.category));
     setEstimatedTime(p.estimatedTime);
   }
 
@@ -312,41 +315,21 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div className={isDuo ? "" : "grid grid-cols-2 gap-3"}>
-                {!isDuo && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-1">
-                      Divisie
-                    </label>
-                    <select
-                      value={division}
-                      onChange={(e) => setDivision(e.target.value as Division)}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
-                    >
-                      {Object.entries(DIVISION_LABELS).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">
-                    Categorie
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as Category)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
-                  >
-                    {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Klasse
+                </label>
+                <select
+                  value={raceClass}
+                  onChange={(e) => setRaceClass(e.target.value as RaceClass)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
+                >
+                  {RACE_CLASSES.map((rc) => (
+                    <option key={rc} value={rc}>
+                      {CLASS_LABELS[rc]}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {isDuo && (
@@ -459,21 +442,21 @@ export default function AdminPage() {
 
         {/* Right: Participants & Heats */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Category summary */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+          {/* Class summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
+            {RACE_CLASSES.map((rc) => {
               const count = participants.filter(
-                (p) => p.category === key
+                (p) => getRaceClass(p.division, p.category) === rc
               ).length;
               return (
                 <div
-                  key={key}
-                  className="bg-white border border-gray-200 shadow-sm border border-gray-200 rounded-lg p-3 text-center"
+                  key={rc}
+                  className="bg-white border border-gray-200 shadow-sm rounded-lg p-3 text-center"
                 >
                   <div className="text-2xl font-bold text-cfa-blue">
                     {count}
                   </div>
-                  <div className="text-xs text-gray-600">{label}</div>
+                  <div className="text-xs text-gray-600">{CLASS_LABELS[rc]}</div>
                 </div>
               );
             })}
@@ -527,12 +510,10 @@ export default function AdminPage() {
               .map(([key, ps]) => {
                 const [div, ...catParts] = key.split("_");
                 const cat = catParts.join("_") as Category;
-                const isDuoCat = cat.startsWith("duo_");
                 return (
                   <div key={key} className="mb-6 last:mb-0">
                     <h3 className="text-sm font-semibold text-cfa-blue mb-2 uppercase tracking-wider">
-                      {!isDuoCat && `${DIVISION_LABELS[div as Division]} - `}
-                      {CATEGORY_LABELS[cat] || key} ({ps.length})
+                      {getClassLabel({ division: div as Division, category: cat })} ({ps.length})
                     </h3>
                     <div className="space-y-1">
                       {ps

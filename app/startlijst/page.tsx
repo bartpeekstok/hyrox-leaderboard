@@ -6,8 +6,7 @@ import Image from "next/image";
 import {
   Participant,
   Heat,
-  CATEGORY_LABELS,
-  DIVISION_LABELS,
+  getClassLabel,
 } from "../lib/types";
 import { getParticipants, getHeats, getSettings } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -165,29 +164,11 @@ export default function StartlijstPage() {
                               )}
                             </div>
                             <div className="text-xs text-gray-600 truncate sm:hidden">
-                              {p.category.startsWith("duo_") ? (
-                                <span>{CATEGORY_LABELS[p.category]}</span>
-                              ) : (
-                                <>
-                                  {DIVISION_LABELS[p.division]}{" "}
-                                  <span className="text-gray-400">
-                                    &middot; {CATEGORY_LABELS[p.category]}
-                                  </span>
-                                </>
-                              )}
+                              {getClassLabel(p)}
                             </div>
                           </div>
                           <div className="hidden sm:block text-sm text-gray-600 whitespace-nowrap">
-                            {p.category.startsWith("duo_") ? (
-                              <span>{CATEGORY_LABELS[p.category]}</span>
-                            ) : (
-                              <>
-                                {DIVISION_LABELS[p.division]}{" "}
-                                <span className="text-gray-400">
-                                  &middot; {CATEGORY_LABELS[p.category]}
-                                </span>
-                              </>
-                            )}
+                            {getClassLabel(p)}
                           </div>
                         </div>
                       ))}

@@ -274,14 +274,12 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
   const headers = lines[0].map((h) => h.toLowerCase().trim());
   const dataRows = lines.slice(1);
 
-  // Find column indices from headers
-  // IMPORTANT: match most specific headers first, avoid false matches
-  // e.g. "geschatte eindtijd" contains "ind" which could match "ind/duo"
+  // The DIVISIE column holds the full class string ("Men Pro",
+  // "Doubles women", ...) — that's the single source of truth.
   const colMap: Record<string, number> = {};
   headers.forEach((h, i) => {
-    if (h === 'ind/duo' || (h.startsWith('ind') && !h.includes('eindtijd'))) colMap.category = i;
     if (h.includes('divisie')) colMap.division = i;
-    if (h === 'naam' || (h === 'naam 2')) {
+    if (h === 'naam' || h === 'naam 2') {
       if (h === 'naam 2') colMap.partnerName = i;
       else colMap.name = i;
     }
@@ -290,40 +288,32 @@ export async function syncFromGoogleSheet(sheetUrl: string): Promise<{
     if (h.includes('geschatte') || h.includes('eindtijd')) colMap.estimatedTime = i;
   });
 
-  // Fallback to position if headers don't match
-  if (colMap.category === undefined) colMap.category = 0;
-  if (colMap.division === undefined) colMap.division = 1;
-  if (colMap.name === undefined) colMap.name = 2;
-  if (colMap.partnerName === undefined) colMap.partnerName = 3;
-  if (colMap.phone === undefined) colMap.phone = 4;
-  if (colMap.email === undefined) colMap.email = 5;
-  if (colMap.estimatedTime === undefined) colMap.estimatedTime = 6;
-
   // Get existing participants to avoid duplicates
   const existing = await getParticipants();
   const existingKeys = new Set(
     existing.map((p) => p.name.toLowerCase().trim())
   );
 
-  const { parseEstimatedTime, mapSheetCategory, mapSheetDivision } = await import('./types');
+  const { parseEstimatedTime, parseClass } = await import('./types');
 
   const newParticipants: (Omit<Participant, 'id' | 'status' | 'startNumber'> & { startNumber?: number })[] = [];
 
   for (const row of dataRows) {
-    const getVal = (col: number): string => (row[col] || '').trim();
+    const getVal = (col: number | undefined): string =>
+      col === undefined ? '' : (row[col] || '').trim();
 
     const name = getVal(colMap.name);
     if (!name) continue;
-
     if (existingKeys.has(name.toLowerCase().trim())) continue;
 
-    const partnerName = getVal(colMap.partnerName);
+    const parsed = parseClass(getVal(colMap.division));
+    if (!parsed) continue;
 
     newParticipants.push({
       name,
-      partnerName: partnerName || undefined,
-      division: mapSheetDivision(getVal(colMap.division)),
-      category: mapSheetCategory(getVal(colMap.category)),
+      partnerName: getVal(colMap.partnerName) || undefined,
+      division: parsed.division,
+      category: parsed.category,
       estimatedTime: parseEstimatedTime(getVal(colMap.estimatedTime)),
       email: getVal(colMap.email) || undefined,
       phone: getVal(colMap.phone) || undefined,

@@ -56,6 +56,97 @@ export const DIVISION_LABELS: Record<Division, string> = {
   open: 'Open',
 };
 
+// Race classes combine division + category into one user-facing label.
+// These are the strings that come through the registration sheet.
+export type RaceClass =
+  | 'men_pro'
+  | 'men_open'
+  | 'women_pro'
+  | 'women_open'
+  | 'doubles_men'
+  | 'doubles_women'
+  | 'doubles_mixed';
+
+export const CLASS_LABELS: Record<RaceClass, string> = {
+  men_pro: 'Men Pro',
+  men_open: 'Men Open',
+  women_pro: 'Women Pro',
+  women_open: 'Women Open',
+  doubles_men: 'Doubles men',
+  doubles_women: 'Doubles women',
+  doubles_mixed: 'Doubles mixed',
+};
+
+export const RACE_CLASSES: RaceClass[] = [
+  'men_pro',
+  'men_open',
+  'women_pro',
+  'women_open',
+  'doubles_men',
+  'doubles_women',
+  'doubles_mixed',
+];
+
+export function getRaceClass(division: Division, category: Category): RaceClass {
+  if (category === 'duo_mm') return 'doubles_men';
+  if (category === 'duo_ww') return 'doubles_women';
+  if (category === 'duo_mw') return 'doubles_mixed';
+  if (category === 'single_men') return division === 'pro' ? 'men_pro' : 'men_open';
+  return division === 'pro' ? 'women_pro' : 'women_open';
+}
+
+export function classToDivisionCategory(rc: RaceClass): { division: Division; category: Category } {
+  switch (rc) {
+    case 'men_pro': return { division: 'pro', category: 'single_men' };
+    case 'men_open': return { division: 'open', category: 'single_men' };
+    case 'women_pro': return { division: 'pro', category: 'single_women' };
+    case 'women_open': return { division: 'open', category: 'single_women' };
+    case 'doubles_men': return { division: 'open', category: 'duo_mm' };
+    case 'doubles_women': return { division: 'open', category: 'duo_ww' };
+    case 'doubles_mixed': return { division: 'open', category: 'duo_mw' };
+  }
+}
+
+export function getClassLabel(p: { division: Division; category: Category }): string {
+  return CLASS_LABELS[getRaceClass(p.division, p.category)];
+}
+
+// Parse a free-form sheet value like "Men Pro", "Doubles women", or legacy
+// "Individual Mannen" + separate "Pro" column. Returns null if not recognized.
+export function parseClass(raw: string): { division: Division; category: Category } | null {
+  if (!raw) return null;
+  const lower = raw.toLowerCase().trim();
+
+  const isDoubles = lower.includes('doubles') || lower.includes('duo');
+  if (isDoubles) {
+    if (lower.includes('mixed') || lower.includes('mix') || lower.includes('m/v') || lower.includes('mw')) {
+      return classToDivisionCategory('doubles_mixed');
+    }
+    if (lower.includes('women') || lower.includes('vrouw')) {
+      return classToDivisionCategory('doubles_women');
+    }
+    if (lower.includes('men') || lower.includes('mannen')) {
+      return classToDivisionCategory('doubles_men');
+    }
+    return null;
+  }
+
+  // Singles — only treat as full class if division is present in the string
+  const isPro = /\bpro\b/.test(lower);
+  const isOpen = /\bopen\b/.test(lower);
+  if (!isPro && !isOpen) return null;
+  const division: Division = isPro ? 'pro' : 'open';
+
+  // Check 'women' before 'men' (substring trap)
+  if (lower.includes('women') || lower.includes('vrouw')) {
+    return { division, category: 'single_women' };
+  }
+  if (/\bmen\b/.test(lower) || lower.includes('mannen')) {
+    return { division, category: 'single_men' };
+  }
+  return null;
+}
+
 export function isDuoCategory(category: Category): boolean {
   return category.startsWith('duo_');
 }
@@ -112,24 +203,6 @@ function parseTimeToMinutes(time: string): number {
   }
   // H:MM → hours:minutes (all values in sheet are 0-2 hours)
   return parts[0] * 60 + parts[1];
-}
-
-// Map Google Sheets category to our Category type
-export function mapSheetCategory(indDuo: string): Category {
-  const lower = indDuo.toLowerCase().trim();
-  if (lower.includes('individual') && lower.includes('man')) return 'single_men';
-  if (lower.includes('individual') && lower.includes('vrouw')) return 'single_women';
-  if (lower.includes('duo') && lower.includes('mannen')) return 'duo_mm';
-  if (lower.includes('duo') && lower.includes('vrouw')) return 'duo_ww';
-  if (lower.includes('duo') && lower.includes('mix')) return 'duo_mw';
-  // Fallback
-  if (lower.includes('duo')) return 'duo_mw';
-  if (lower.includes('vrouw')) return 'single_women';
-  return 'single_men';
-}
-
-export function mapSheetDivision(divisie: string): Division {
-  return divisie.toLowerCase().trim() === 'pro' ? 'pro' : 'open';
 }
 
 export function formatTime(ms: number): string {

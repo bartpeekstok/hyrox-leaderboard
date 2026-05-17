@@ -6,8 +6,7 @@ import Image from "next/image";
 import {
   Participant,
   Heat,
-  CATEGORY_LABELS,
-  DIVISION_LABELS,
+  getClassLabel,
   formatTime,
 } from "../lib/types";
 import {
@@ -461,9 +460,7 @@ export default function RaceControlPage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {p.category.startsWith("duo_")
-                        ? CATEGORY_LABELS[p.category]
-                        : `${DIVISION_LABELS[p.division]} - ${CATEGORY_LABELS[p.category]}`}
+                      {getClassLabel(p)}
                     </div>
                   </div>
                 );
@@ -541,9 +538,7 @@ export default function RaceControlPage() {
                             )}
                           </div>
                           <div className="text-xs text-gray-600">
-                            {p.category.startsWith("duo_")
-                              ? CATEGORY_LABELS[p.category]
-                              : `${DIVISION_LABELS[p.division]} - ${CATEGORY_LABELS[p.category]}`}
+                            {getClassLabel(p)}
                           </div>
                           {isFinished ? (
                             <div className="text-cfa-green font-mono font-bold text-lg">
