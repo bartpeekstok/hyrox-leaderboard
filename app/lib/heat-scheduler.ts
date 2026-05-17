@@ -12,8 +12,9 @@ import { Participant, Heat, Category, Division } from './types';
  *   Block 2 - 152/103 kg: Open Men, Pro Women, Duo MM Open, ALL Duo MW, Duo WW Pro
  *   Block 3 - 102/78 kg:  Open Women, Duo WW Open
  *
+ * Run order: Block 3 → Block 2 → Block 1 (lightest first, Pro block closes the day).
  * Within each block: sorted by estimated time, fastest first (prevents overtaking).
- * Between blocks: sled weight change.
+ * Between blocks: sled weight change (plates are added progressively).
  */
 
 export type SledBlock = 1 | 2 | 3;
@@ -72,8 +73,8 @@ export function generateHeats(
 
   const allHeats: HeatDraft[] = [];
 
-  // Process blocks in order: 1 (heaviest) → 2 (middle) → 3 (lightest)
-  for (const blockNum of [1, 2, 3] as SledBlock[]) {
+  // Process blocks in order: 3 (lightest) → 2 (middle) → 1 (heaviest, Pro)
+  for (const blockNum of [3, 2, 1] as SledBlock[]) {
     const ps = blocks.get(blockNum)!;
     for (let i = 0; i < ps.length; i += 3) {
       const heatParticipants = ps.slice(i, i + 3);
