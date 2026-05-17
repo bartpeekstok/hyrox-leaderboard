@@ -37,7 +37,7 @@ export async function addParticipant(
     start_number: startNumber,
     name: p.name,
     partner_name: p.partnerName || null,
-    division: p.division,
+    division: p.category.startsWith('duo_') ? 'open' : p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
     email: p.email || null,
@@ -65,7 +65,7 @@ export async function addParticipantsBulk(
     start_number: p.startNumber || nextNum++,
     name: p.name,
     partner_name: p.partnerName || null,
-    division: p.division,
+    division: p.category.startsWith('duo_') ? 'open' : p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
     email: p.email || null,
@@ -85,7 +85,11 @@ export async function updateParticipant(
   if (updates.name !== undefined) row.name = updates.name;
   if (updates.partnerName !== undefined) row.partner_name = updates.partnerName;
   if (updates.division !== undefined) row.division = updates.division;
-  if (updates.category !== undefined) row.category = updates.category;
+  if (updates.category !== undefined) {
+    row.category = updates.category;
+    // Duo's hebben geen pro/open onderscheid — forceer 'open' bij wijziging
+    if (updates.category.startsWith('duo_')) row.division = 'open';
+  }
   if (updates.estimatedTime !== undefined) row.estimated_time = updates.estimatedTime;
   if (updates.heatId !== undefined) row.heat_id = updates.heatId;
   if (updates.startTime !== undefined) row.start_time = updates.startTime;
@@ -399,13 +403,17 @@ export async function updateSettings(startTimeBase: string, heatInterval: number
 // ==================== HELPERS ====================
 
 function dbToParticipant(row: Record<string, unknown>): Participant {
+  const category = row.category as Participant['category'];
+  // Duo's hebben geen pro/open onderscheid — normaliseer naar 'open' bij lezen
+  const rawDivision = row.division as Participant['division'];
+  const division = category?.startsWith('duo_') ? 'open' : rawDivision;
   return {
     id: row.id as string,
     startNumber: row.start_number as number,
     name: row.name as string,
     partnerName: (row.partner_name as string) || undefined,
-    division: row.division as Participant['division'],
-    category: row.category as Participant['category'],
+    division,
+    category,
     estimatedTime: row.estimated_time as number,
     heatId: (row.heat_id as string) || undefined,
     startTime: (row.start_time as number) || undefined,

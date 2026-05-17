@@ -56,6 +56,10 @@ export const DIVISION_LABELS: Record<Division, string> = {
   open: 'Open',
 };
 
+export function isDuoCategory(category: Category): boolean {
+  return category.startsWith('duo_');
+}
+
 export function getCategoryWeightClass(category: Category): WeightClass {
   switch (category) {
     case 'single_men':

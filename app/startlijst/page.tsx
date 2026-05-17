@@ -165,17 +165,29 @@ export default function StartlijstPage() {
                               )}
                             </div>
                             <div className="text-xs text-gray-600 truncate sm:hidden">
-                              {DIVISION_LABELS[p.division]}{" "}
-                              <span className="text-gray-400">
-                                &middot; {CATEGORY_LABELS[p.category]}
-                              </span>
+                              {p.category.startsWith("duo_") ? (
+                                <span>{CATEGORY_LABELS[p.category]}</span>
+                              ) : (
+                                <>
+                                  {DIVISION_LABELS[p.division]}{" "}
+                                  <span className="text-gray-400">
+                                    &middot; {CATEGORY_LABELS[p.category]}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                           <div className="hidden sm:block text-sm text-gray-600 whitespace-nowrap">
-                            {DIVISION_LABELS[p.division]}{" "}
-                            <span className="text-gray-400">
-                              &middot; {CATEGORY_LABELS[p.category]}
-                            </span>
+                            {p.category.startsWith("duo_") ? (
+                              <span>{CATEGORY_LABELS[p.category]}</span>
+                            ) : (
+                              <>
+                                {DIVISION_LABELS[p.division]}{" "}
+                                <span className="text-gray-400">
+                                  &middot; {CATEGORY_LABELS[p.category]}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}

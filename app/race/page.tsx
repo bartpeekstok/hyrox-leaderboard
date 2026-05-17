@@ -461,8 +461,9 @@ export default function RaceControlPage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {DIVISION_LABELS[p.division]} -{" "}
-                      {CATEGORY_LABELS[p.category]}
+                      {p.category.startsWith("duo_")
+                        ? CATEGORY_LABELS[p.category]
+                        : `${DIVISION_LABELS[p.division]} - ${CATEGORY_LABELS[p.category]}`}
                     </div>
                   </div>
                 );
@@ -540,8 +541,9 @@ export default function RaceControlPage() {
                             )}
                           </div>
                           <div className="text-xs text-gray-600">
-                            {DIVISION_LABELS[p.division]} -{" "}
-                            {CATEGORY_LABELS[p.category]}
+                            {p.category.startsWith("duo_")
+                              ? CATEGORY_LABELS[p.category]
+                              : `${DIVISION_LABELS[p.division]} - ${CATEGORY_LABELS[p.category]}`}
                           </div>
                           {isFinished ? (
                             <div className="text-cfa-green font-mono font-bold text-lg">

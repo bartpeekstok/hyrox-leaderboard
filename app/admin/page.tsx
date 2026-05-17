@@ -312,23 +312,25 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-1">
-                    Divisie
-                  </label>
-                  <select
-                    value={division}
-                    onChange={(e) => setDivision(e.target.value as Division)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
-                  >
-                    {Object.entries(DIVISION_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className={isDuo ? "" : "grid grid-cols-2 gap-3"}>
+                {!isDuo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-1">
+                      Divisie
+                    </label>
+                    <select
+                      value={division}
+                      onChange={(e) => setDivision(e.target.value as Division)}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
+                    >
+                      {Object.entries(DIVISION_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-1">
                     Categorie
@@ -525,10 +527,11 @@ export default function AdminPage() {
               .map(([key, ps]) => {
                 const [div, ...catParts] = key.split("_");
                 const cat = catParts.join("_") as Category;
+                const isDuoCat = cat.startsWith("duo_");
                 return (
                   <div key={key} className="mb-6 last:mb-0">
                     <h3 className="text-sm font-semibold text-cfa-blue mb-2 uppercase tracking-wider">
-                      {DIVISION_LABELS[div as Division]} -{" "}
+                      {!isDuoCat && `${DIVISION_LABELS[div as Division]} - `}
                       {CATEGORY_LABELS[cat] || key} ({ps.length})
                     </h3>
                     <div className="space-y-1">
