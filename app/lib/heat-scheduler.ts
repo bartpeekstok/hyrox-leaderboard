@@ -113,6 +113,8 @@ export function generateHeats(
 
   // Step 4: Create heats of 3 within each group and remember the
   // group/block boundary so we can insert buffers when they change.
+  // Als een groep eindigt met één losse deelnemer (rest 1 bij delen door 3),
+  // herverdelen we de laatste 4 in twee heats van 2 i.p.v. een heat van 3 + 1.
   type HeatDraft = {
     participants: Participant[];
     block: SledBlock;
@@ -122,9 +124,26 @@ export function generateHeats(
   const allHeats: HeatDraft[] = [];
   for (const g of orderedGroups) {
     const gk = groupKey(g.category, g.division);
-    for (let i = 0; i < g.participants.length; i += 3) {
+    const n = g.participants.length;
+    const splitLastFour = n >= 4 && n % 3 === 1;
+    const cutoff = splitLastFour ? n - 4 : n;
+
+    for (let i = 0; i < cutoff; i += 3) {
       allHeats.push({
         participants: g.participants.slice(i, i + 3),
+        block: g.block,
+        groupKey: gk,
+      });
+    }
+
+    if (splitLastFour) {
+      allHeats.push({
+        participants: g.participants.slice(cutoff, cutoff + 2),
+        block: g.block,
+        groupKey: gk,
+      });
+      allHeats.push({
+        participants: g.participants.slice(cutoff + 2, cutoff + 4),
         block: g.block,
         groupKey: gk,
       });
@@ -132,9 +151,9 @@ export function generateHeats(
   }
 
   // Step 5: Assign heat numbers and scheduled times.
-  // - Big buffer when sled weight changes (2 slots = 20 min @ 10 min intervals)
-  // - Small buffer when switching category within a block (fast restarts)
-  const BUFFER_SLOTS_BETWEEN_BLOCKS = 2;
+  // Eén leeg slot tussen categorieën én tussen blokken (sled-wissel past
+  // binnen die buffer omdat de laatste heat sowieso doorloopt).
+  const BUFFER_SLOTS_BETWEEN_BLOCKS = 1;
   const BUFFER_SLOTS_BETWEEN_CATEGORIES = 1;
 
   const [baseHours, baseMinutes] = startTimeBase.split(':').map(Number);
