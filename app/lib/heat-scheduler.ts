@@ -7,13 +7,14 @@ import { Participant, Heat, Category, Division } from './types';
  * participants grab their own weight (wall balls, sandbag, farmers carry)
  * or have no weight (SkiErg, rowing, burpees).
  *
- * Duo's hebben geen pro/open onderscheid qua gewicht — alleen man/vrouw/mixed:
- *   Duo MM en Duo MW lopen op Pro Men gewicht, Duo WW op Pro Women gewicht.
+ * Duo MM en WW hebben Pro/Open (volgen single-gewicht). Duo MW heeft geen
+ * Pro/Open en loopt altijd op 152/103 kg.
  *
  * 3 Sled Weight Blocks (only 2 changes the entire day):
- *   Block 1 - 202/153 kg: Pro Men, ALL Duo MM, ALL Duo MW
- *   Block 2 - 152/103 kg: Open Men, Pro Women, ALL Duo WW
- *   Block 3 - 102/78 kg:  Open Women
+ *   Block 1 - 202/153 kg: Pro Men (single), Pro Duo MM
+ *   Block 2 - 152/103 kg: Open Men (single), Pro Women (single),
+ *                         Open Duo MM, Pro Duo WW, ALL Duo MW
+ *   Block 3 - 102/78 kg:  Open Women (single), Open Duo WW
  *
  * Run order: Block 3 → Block 2 → Block 1 (lightest first, Pro block closes the day).
  * Within each block: sorted by estimated time, fastest first (prevents overtaking).
@@ -29,9 +30,11 @@ export const SLED_BLOCK_WEIGHTS: Record<SledBlock, { label: string; men: number;
 };
 
 export function getSledBlock(division: Division, category: Category): SledBlock {
-  // Duo's volgen man/vrouw/mixed gewicht, geen pro/open split
-  if (category === 'duo_mm' || category === 'duo_mw') return 1;
-  if (category === 'duo_ww') return 2;
+  // Duo MW: vast op 152/103, geen pro/open
+  if (category === 'duo_mw') return 2;
+  // Duo MM/WW: pro/open bepaalt blok (één stap lichter dan singles)
+  if (category === 'duo_mm') return division === 'pro' ? 1 : 2;
+  if (category === 'duo_ww') return division === 'pro' ? 2 : 3;
 
   // Singles: pro/open bepaalt het blok
   if (division === 'pro' && category === 'single_men') return 1;

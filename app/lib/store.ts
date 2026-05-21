@@ -37,7 +37,7 @@ export async function addParticipant(
     start_number: startNumber,
     name: p.name,
     partner_name: p.partnerName || null,
-    division: p.category.startsWith('duo_') ? 'open' : p.division,
+    division: p.category === 'duo_mw' ? 'open' : p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
     email: p.email || null,
@@ -65,7 +65,7 @@ export async function addParticipantsBulk(
     start_number: p.startNumber || nextNum++,
     name: p.name,
     partner_name: p.partnerName || null,
-    division: p.category.startsWith('duo_') ? 'open' : p.division,
+    division: p.category === 'duo_mw' ? 'open' : p.division,
     category: p.category,
     estimated_time: p.estimatedTime,
     email: p.email || null,
@@ -87,8 +87,8 @@ export async function updateParticipant(
   if (updates.division !== undefined) row.division = updates.division;
   if (updates.category !== undefined) {
     row.category = updates.category;
-    // Duo's hebben geen pro/open onderscheid — forceer 'open' bij wijziging
-    if (updates.category.startsWith('duo_')) row.division = 'open';
+    // Duo MW heeft geen pro/open onderscheid — forceer 'open' bij wijziging
+    if (updates.category === 'duo_mw') row.division = 'open';
   }
   if (updates.estimatedTime !== undefined) row.estimated_time = updates.estimatedTime;
   if (updates.heatId !== undefined) row.heat_id = updates.heatId;
@@ -394,9 +394,9 @@ export async function updateSettings(startTimeBase: string, heatInterval: number
 
 function dbToParticipant(row: Record<string, unknown>): Participant {
   const category = row.category as Participant['category'];
-  // Duo's hebben geen pro/open onderscheid — normaliseer naar 'open' bij lezen
+  // Duo MW heeft geen pro/open onderscheid — normaliseer naar 'open' bij lezen
   const rawDivision = row.division as Participant['division'];
-  const division = category?.startsWith('duo_') ? 'open' : rawDivision;
+  const division = category === 'duo_mw' ? 'open' : rawDivision;
   return {
     id: row.id as string,
     startNumber: row.start_number as number,

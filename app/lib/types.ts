@@ -58,13 +58,16 @@ export const DIVISION_LABELS: Record<Division, string> = {
 
 // Race classes combine division + category into one user-facing label.
 // These are the strings that come through the registration sheet.
+// MM en WW doubles hebben Pro/Open; MW doubles loopt op één vast gewicht.
 export type RaceClass =
   | 'men_pro'
   | 'men_open'
   | 'women_pro'
   | 'women_open'
-  | 'doubles_men'
-  | 'doubles_women'
+  | 'doubles_men_pro'
+  | 'doubles_men_open'
+  | 'doubles_women_pro'
+  | 'doubles_women_open'
   | 'doubles_mixed';
 
 export const CLASS_LABELS: Record<RaceClass, string> = {
@@ -72,8 +75,10 @@ export const CLASS_LABELS: Record<RaceClass, string> = {
   men_open: 'Men Open',
   women_pro: 'Women Pro',
   women_open: 'Women Open',
-  doubles_men: 'Doubles men',
-  doubles_women: 'Doubles women',
+  doubles_men_pro: 'Doubles men Pro',
+  doubles_men_open: 'Doubles men Open',
+  doubles_women_pro: 'Doubles women Pro',
+  doubles_women_open: 'Doubles women Open',
   doubles_mixed: 'Doubles mixed',
 };
 
@@ -82,14 +87,16 @@ export const RACE_CLASSES: RaceClass[] = [
   'men_open',
   'women_pro',
   'women_open',
-  'doubles_men',
-  'doubles_women',
+  'doubles_men_pro',
+  'doubles_men_open',
+  'doubles_women_pro',
+  'doubles_women_open',
   'doubles_mixed',
 ];
 
 export function getRaceClass(division: Division, category: Category): RaceClass {
-  if (category === 'duo_mm') return 'doubles_men';
-  if (category === 'duo_ww') return 'doubles_women';
+  if (category === 'duo_mm') return division === 'pro' ? 'doubles_men_pro' : 'doubles_men_open';
+  if (category === 'duo_ww') return division === 'pro' ? 'doubles_women_pro' : 'doubles_women_open';
   if (category === 'duo_mw') return 'doubles_mixed';
   if (category === 'single_men') return division === 'pro' ? 'men_pro' : 'men_open';
   return division === 'pro' ? 'women_pro' : 'women_open';
@@ -101,8 +108,10 @@ export function classToDivisionCategory(rc: RaceClass): { division: Division; ca
     case 'men_open': return { division: 'open', category: 'single_men' };
     case 'women_pro': return { division: 'pro', category: 'single_women' };
     case 'women_open': return { division: 'open', category: 'single_women' };
-    case 'doubles_men': return { division: 'open', category: 'duo_mm' };
-    case 'doubles_women': return { division: 'open', category: 'duo_ww' };
+    case 'doubles_men_pro': return { division: 'pro', category: 'duo_mm' };
+    case 'doubles_men_open': return { division: 'open', category: 'duo_mm' };
+    case 'doubles_women_pro': return { division: 'pro', category: 'duo_ww' };
+    case 'doubles_women_open': return { division: 'open', category: 'duo_ww' };
     case 'doubles_mixed': return { division: 'open', category: 'duo_mw' };
   }
 }
@@ -118,22 +127,23 @@ export function parseClass(raw: string): { division: Division; category: Categor
   const lower = raw.toLowerCase().trim();
 
   const isDoubles = lower.includes('doubles') || lower.includes('duo');
+  const isPro = /\bpro\b/.test(lower);
+  const isOpen = /\bopen\b/.test(lower);
+
   if (isDoubles) {
     if (lower.includes('mixed') || lower.includes('mix') || lower.includes('m/v') || lower.includes('mw')) {
       return classToDivisionCategory('doubles_mixed');
     }
     if (lower.includes('women') || lower.includes('vrouw')) {
-      return classToDivisionCategory('doubles_women');
+      return classToDivisionCategory(isPro ? 'doubles_women_pro' : 'doubles_women_open');
     }
     if (lower.includes('men') || lower.includes('mannen')) {
-      return classToDivisionCategory('doubles_men');
+      return classToDivisionCategory(isPro ? 'doubles_men_pro' : 'doubles_men_open');
     }
     return null;
   }
 
   // Singles — only treat as full class if division is present in the string
-  const isPro = /\bpro\b/.test(lower);
-  const isOpen = /\bopen\b/.test(lower);
   if (!isPro && !isOpen) return null;
   const division: Division = isPro ? 'pro' : 'open';
 
