@@ -17,8 +17,11 @@ import { Participant, Heat, Category, Division } from './types';
  *   Block 3 - 102/78 kg:  Open Women (single), Open Duo WW
  *
  * Run order: Block 3 → Block 2 → Block 1 (lightest first, Pro block closes the day).
- * Within each block: sorted by estimated time, fastest first (prevents overtaking).
- * Between blocks: sled weight change (plates are added progressively).
+ * Within each block: duo-categorieën eerst, dan singles. Binnen één
+ * (category, division) groep: snelste eerst (voorkomt inhalen). Tussen
+ * categorieën binnen een blok een kleine buffer omdat de snelste van de
+ * volgende categorie anders de langzaamste van de vorige inhaalt.
+ * Tussen blokken: grotere buffer voor sled-gewichtswissel.
  */
 
 export type SledBlock = 1 | 2 | 3;
@@ -44,6 +47,25 @@ export function getSledBlock(division: Division, category: Category): SledBlock 
   return 2;
 }
 
+// Volgorde binnen een sled-blok: duo's eerst, dan singles. Binnen die twee
+// een stabiele volgorde over de categorieën en pro vóór open.
+const CATEGORY_ORDER: Category[] = [
+  'duo_mm',
+  'duo_ww',
+  'duo_mw',
+  'single_men',
+  'single_women',
+];
+const DIVISION_ORDER: Division[] = ['pro', 'open'];
+
+function groupSortKey(category: Category, division: Division): number {
+  return CATEGORY_ORDER.indexOf(category) * 10 + DIVISION_ORDER.indexOf(division);
+}
+
+function groupKey(category: Category, division: Division): string {
+  return `${category}_${division}`;
+}
+
 export function generateHeats(
   participants: Participant[],
   startTimeBase: string,
@@ -51,65 +73,85 @@ export function generateHeats(
 ): Heat[] {
   if (participants.length === 0) return [];
 
-  // Step 1: Assign each participant to a sled block and group them
-  const blocks = new Map<SledBlock, Participant[]>();
-  blocks.set(1, []);
-  blocks.set(2, []);
-  blocks.set(3, []);
+  // Step 1: Group participants by sled block and within each block by
+  // (category, division) sub-group.
+  type Group = {
+    block: SledBlock;
+    category: Category;
+    division: Division;
+    participants: Participant[];
+  };
+
+  const groupMap = new Map<string, Group>();
 
   for (const p of participants) {
     const block = getSledBlock(p.division, p.category);
-    blocks.get(block)!.push(p);
+    const key = `${block}_${groupKey(p.category, p.division)}`;
+    let g = groupMap.get(key);
+    if (!g) {
+      g = { block, category: p.category, division: p.division, participants: [] };
+      groupMap.set(key, g);
+    }
+    g.participants.push(p);
   }
 
-  // Step 2: Within each block, sort by estimated time (fastest first)
-  for (const ps of blocks.values()) {
-    ps.sort((a, b) => a.estimatedTime - b.estimatedTime);
+  // Step 2: Sort participants within each group, fastest first.
+  for (const g of groupMap.values()) {
+    g.participants.sort((a, b) => a.estimatedTime - b.estimatedTime);
   }
 
-  // Step 3: Create heats of 3 within each block
+  // Step 3: Order groups — blocks 3 → 2 → 1 (lightest sled first), and
+  // within each block duos before singles using CATEGORY_ORDER.
+  const orderedGroups = [...groupMap.values()].sort((a, b) => {
+    const blockOrder = [3, 2, 1] as SledBlock[];
+    const blockDiff = blockOrder.indexOf(a.block) - blockOrder.indexOf(b.block);
+    if (blockDiff !== 0) return blockDiff;
+    return (
+      groupSortKey(a.category, a.division) - groupSortKey(b.category, b.division)
+    );
+  });
+
+  // Step 4: Create heats of 3 within each group and remember the
+  // group/block boundary so we can insert buffers when they change.
   type HeatDraft = {
     participants: Participant[];
-    avgEstimatedTime: number;
     block: SledBlock;
+    groupKey: string;
   };
 
   const allHeats: HeatDraft[] = [];
-
-  // Process blocks in order: 3 (lightest) → 2 (middle) → 1 (heaviest, Pro)
-  for (const blockNum of [3, 2, 1] as SledBlock[]) {
-    const ps = blocks.get(blockNum)!;
-    for (let i = 0; i < ps.length; i += 3) {
-      const heatParticipants = ps.slice(i, i + 3);
-      const avg =
-        heatParticipants.reduce((sum, p) => sum + p.estimatedTime, 0) /
-        heatParticipants.length;
+  for (const g of orderedGroups) {
+    const gk = groupKey(g.category, g.division);
+    for (let i = 0; i < g.participants.length; i += 3) {
       allHeats.push({
-        participants: heatParticipants,
-        avgEstimatedTime: avg,
-        block: blockNum,
+        participants: g.participants.slice(i, i + 3),
+        block: g.block,
+        groupKey: gk,
       });
     }
   }
 
-  // Step 4: Assign heat numbers and scheduled times
-  // Add buffer slots between sled weight blocks for:
-  // - Time to change sled weights
-  // - Prevent fast people in new block from catching slow people in previous block
-  const BUFFER_SLOTS_BETWEEN_BLOCKS = 2; // 2 empty slots = 20 min buffer at 10 min intervals
+  // Step 5: Assign heat numbers and scheduled times.
+  // - Big buffer when sled weight changes (2 slots = 20 min @ 10 min intervals)
+  // - Small buffer when switching category within a block (fast restarts)
+  const BUFFER_SLOTS_BETWEEN_BLOCKS = 2;
+  const BUFFER_SLOTS_BETWEEN_CATEGORIES = 1;
 
   const [baseHours, baseMinutes] = startTimeBase.split(':').map(Number);
   const baseMinutesTotal = baseHours * 60 + baseMinutes;
 
   let slotIndex = 0;
   let previousBlock: SledBlock | null = null;
+  let previousGroupKey: string | null = null;
 
   return allHeats.map((h, heatIndex) => {
-    // Add buffer when switching between sled weight blocks
     if (previousBlock !== null && h.block !== previousBlock) {
       slotIndex += BUFFER_SLOTS_BETWEEN_BLOCKS;
+    } else if (previousGroupKey !== null && h.groupKey !== previousGroupKey) {
+      slotIndex += BUFFER_SLOTS_BETWEEN_CATEGORIES;
     }
     previousBlock = h.block;
+    previousGroupKey = h.groupKey;
 
     const minutesOffset = slotIndex * intervalMinutes;
     const totalMinutes = baseMinutesTotal + minutesOffset;
