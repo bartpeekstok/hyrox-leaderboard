@@ -165,6 +165,26 @@ export default function AdminPage() {
     fetchData();
   }
 
+  async function handleMoveParticipant(
+    participantId: string,
+    fromHeatId: string,
+    toHeatId: string
+  ) {
+    if (fromHeatId === toHeatId) return;
+    const updated = heats.map((h) => {
+      if (h.id === fromHeatId) {
+        return { ...h, participantIds: h.participantIds.filter((id) => id !== participantId) };
+      }
+      if (h.id === toHeatId) {
+        return { ...h, participantIds: [...h.participantIds, participantId] };
+      }
+      return h;
+    });
+    setHeats(updated);
+    await saveHeats(updated);
+    fetchData();
+  }
+
   async function handleSync() {
     if (!sheetUrl) return;
     setSyncing(true);
@@ -487,12 +507,27 @@ export default function AdminPage() {
                         </span>
                       </div>
                       {heatParticipants.map((p) => (
-                        <div key={p.id} className="text-sm text-gray-900">
-                          <span className="text-cfa-blue font-mono font-bold mr-2">
-                            #{p.startNumber}
+                        <div key={p.id} className="text-sm text-gray-900 flex items-center justify-between gap-2 py-0.5">
+                          <span className="truncate">
+                            <span className="text-cfa-blue font-mono font-bold mr-2">
+                              #{p.startNumber}
+                            </span>
+                            {p.name}
+                            {p.partnerName && ` & ${p.partnerName}`}
                           </span>
-                          {p.name}
-                          {p.partnerName && ` & ${p.partnerName}`}
+                          <select
+                            value={heat.id}
+                            onChange={(e) => handleMoveParticipant(p.id, heat.id, e.target.value)}
+                            disabled={heat.status !== 'scheduled'}
+                            className="text-xs bg-white border border-gray-300 rounded px-1 py-0.5 text-gray-700 focus:border-cfa-blue focus:outline-none disabled:opacity-50"
+                            title={heat.status !== 'scheduled' ? 'Heat is gestart of afgerond' : 'Verplaats naar andere heat'}
+                          >
+                            {heats.map((h) => (
+                              <option key={h.id} value={h.id} disabled={h.status !== 'scheduled' && h.id !== heat.id}>
+                                Heat {h.heatNumber} ({h.scheduledTime})
+                              </option>
+                            ))}
+                          </select>
                         </div>
                       ))}
                     </div>
