@@ -161,6 +161,16 @@ export default function AdminPage() {
     fetchData();
   }
 
+  async function handleUpdateHeatTime(heatId: string, newTime: string) {
+    if (!/^\d{2}:\d{2}$/.test(newTime)) return;
+    const updated = heats.map((h) =>
+      h.id === heatId ? { ...h, scheduledTime: newTime } : h
+    );
+    setHeats(updated);
+    await saveHeats(updated);
+    fetchData();
+  }
+
   async function handleMoveParticipant(
     participantId: string,
     fromHeatId: string,
@@ -497,9 +507,18 @@ export default function AdminPage() {
                         <span className="font-bold text-sm">
                           Heat {heat.heatNumber}
                         </span>
-                        <span className="text-xs text-cfa-blue">
-                          {heat.scheduledTime}
-                        </span>
+                        <input
+                          type="time"
+                          defaultValue={heat.scheduledTime}
+                          disabled={heat.status !== 'scheduled'}
+                          onBlur={(e) => {
+                            if (e.target.value && e.target.value !== heat.scheduledTime) {
+                              handleUpdateHeatTime(heat.id, e.target.value);
+                            }
+                          }}
+                          className="text-xs text-cfa-blue font-mono bg-white border border-gray-300 rounded px-1 py-0.5 focus:border-cfa-blue focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={heat.status !== 'scheduled' ? 'Heat is gestart of afgerond' : 'Klik om tijd te wijzigen'}
+                        />
                       </div>
                       {heatParticipants.map((p) => (
                         <div key={p.id} className="text-sm text-gray-900 flex items-center justify-between gap-2 py-0.5">
