@@ -83,19 +83,15 @@ export default function AdminPage() {
     }
   }, [sheetUrl]);
 
-  // Auto-sync every 30 seconds when enabled
+  // Auto-sync every 30 seconds when enabled. Nieuwe deelnemers komen
+  // ongeplaatst binnen — admin wijst ze handmatig toe via "Alle deelnemers".
   useEffect(() => {
     if (!autoSync || !sheetUrl) return;
     const interval = setInterval(async () => {
       try {
         const result = await syncFromGoogleSheet(sheetUrl);
         if (result.added > 0) {
-          setSyncResult(`+${result.added} nieuwe deelnemers (totaal: ${result.total})`);
-          fetchData();
-          // Auto-regenerate heats
-          const updatedParticipants = await getParticipants();
-          const newHeats = generateHeats(updatedParticipants, startTime, heatInterval);
-          await saveHeats(newHeats);
+          setSyncResult(`+${result.added} nieuwe deelnemers (totaal: ${result.total}) — nog toewijzen`);
           fetchData();
         }
       } catch {
@@ -103,7 +99,7 @@ export default function AdminPage() {
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [autoSync, sheetUrl, startTime, heatInterval, fetchData]);
+  }, [autoSync, sheetUrl, fetchData]);
 
   const isDuo = category.startsWith("duo_");
 
@@ -172,11 +168,12 @@ export default function AdminPage() {
   ) {
     if (fromHeatId === toHeatId) return;
     const updated = heats.map((h) => {
-      if (h.id === fromHeatId) {
-        return { ...h, participantIds: h.participantIds.filter((id) => id !== participantId) };
-      }
+      const hadIt = h.participantIds.includes(participantId);
       if (h.id === toHeatId) {
-        return { ...h, participantIds: [...h.participantIds, participantId] };
+        return hadIt ? h : { ...h, participantIds: [...h.participantIds, participantId] };
+      }
+      if (hadIt) {
+        return { ...h, participantIds: h.participantIds.filter((id) => id !== participantId) };
       }
       return h;
     });
@@ -193,18 +190,11 @@ export default function AdminPage() {
       await updateSettings(startTime, heatInterval, sheetUrl);
       const result = await syncFromGoogleSheet(sheetUrl);
       setSyncResult(
-        `${result.added} nieuwe deelnemers toegevoegd (totaal: ${result.total})`
+        result.added > 0
+          ? `${result.added} nieuwe deelnemers toegevoegd (totaal: ${result.total}) — nog toewijzen aan heat`
+          : `Geen nieuwe deelnemers (totaal: ${result.total})`
       );
-      if (result.added > 0) {
-        await fetchData();
-        // Auto-regenerate heats after sync
-        const updatedParticipants = await getParticipants();
-        const newHeats = generateHeats(updatedParticipants, startTime, heatInterval);
-        await saveHeats(newHeats);
-        fetchData();
-      } else {
-        fetchData();
-      }
+      fetchData();
     } catch (err) {
       setSyncResult(`Fout: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
     }
@@ -255,6 +245,11 @@ export default function AdminPage() {
             <span className="bg-cfa-green/10 text-cfa-green border border-cfa-green/20 px-3 py-1 rounded-full text-sm font-semibold">
               {heats.length} heats
             </span>
+            {heats.length > 0 && participants.some((p) => !p.heatId) && (
+              <span className="bg-yellow-100 text-yellow-800 border border-yellow-300 px-3 py-1 rounded-full text-sm font-semibold">
+                {participants.filter((p) => !p.heatId).length} zonder heat
+              </span>
+            )}
             {autoSync && (
               <span className="bg-cfa-green/20 text-cfa-green px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
                 Auto-sync AAN
@@ -574,12 +569,25 @@ export default function AdminPage() {
                               <span className="text-xs text-gray-500">
                                 ~{p.estimatedTime}m
                               </span>
-                              {p.heatId && (
-                                <span className="text-xs bg-cfa-blue/10 text-cfa-blue border border-cfa-blue/20 px-2 py-0.5 rounded">
-                                  Heat{" "}
-                                  {heats.find((h) => h.id === p.heatId)
-                                    ?.heatNumber || "?"}
-                                </span>
+                              {heats.length > 0 && (
+                                <select
+                                  value={p.heatId || ""}
+                                  onChange={(e) => handleMoveParticipant(p.id, p.heatId || "", e.target.value)}
+                                  className={`text-xs border rounded px-1 py-0.5 focus:outline-none ${
+                                    p.heatId
+                                      ? "bg-cfa-blue/10 text-cfa-blue border-cfa-blue/20"
+                                      : "bg-yellow-50 text-yellow-800 border-yellow-300 font-semibold"
+                                  }`}
+                                >
+                                  <option value="" disabled>
+                                    Geen heat
+                                  </option>
+                                  {heats.map((h) => (
+                                    <option key={h.id} value={h.id} disabled={h.status !== 'scheduled' && h.id !== p.heatId}>
+                                      Heat {h.heatNumber} ({h.scheduledTime})
+                                    </option>
+                                  ))}
+                                </select>
                               )}
                             </div>
                             <div className="flex gap-1">
