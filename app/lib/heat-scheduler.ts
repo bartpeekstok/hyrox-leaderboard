@@ -17,11 +17,11 @@ import { Participant, Heat, Category, Division } from './types';
  *   Block 3 - 102/78 kg:  Open Women (single), Open Duo WW
  *
  * Run order: Block 3 → Block 2 → Block 1 (lightest first, Pro block closes the day).
- * Within each block: duo-categorieën eerst, dan singles. Binnen één
- * (category, division) groep: snelste eerst (voorkomt inhalen). Tussen
- * categorieën binnen een blok een kleine buffer omdat de snelste van de
- * volgende categorie anders de langzaamste van de vorige inhaalt.
- * Tussen blokken: grotere buffer voor sled-gewichtswissel.
+ * Binnen één blok: duo-categorieën eerst, dan singles. Binnen elke
+ * (category, division) sub-groep: snelste eerst. Open vóór Pro (Pro sluit
+ * elke sub-groep af). GEEN buffer tussen sub-groepen — de greedy pakker
+ * mag duos en singles mixen in een overgangsheat. Tussen blokken één slot
+ * buffer voor de sled-gewichtswissel.
  */
 
 export type SledBlock = 1 | 2 | 3;
@@ -48,7 +48,8 @@ export function getSledBlock(division: Division, category: Category): SledBlock 
 }
 
 // Volgorde binnen een sled-blok: duo's eerst, dan singles. Binnen die twee
-// een stabiele volgorde over de categorieën en pro vóór open.
+// een stabiele volgorde over de categorieën en Open vóór Pro (Pro sluit
+// elke sub-groep en daarmee de dag af).
 const CATEGORY_ORDER: Category[] = [
   'duo_mm',
   'duo_ww',
@@ -56,7 +57,7 @@ const CATEGORY_ORDER: Category[] = [
   'single_men',
   'single_women',
 ];
-const DIVISION_ORDER: Division[] = ['pro', 'open'];
+const DIVISION_ORDER: Division[] = ['open', 'pro'];
 
 function groupSortKey(category: Category, division: Division): number {
   return CATEGORY_ORDER.indexOf(category) * 10 + DIVISION_ORDER.indexOf(division);
@@ -111,66 +112,64 @@ export function generateHeats(
     );
   });
 
-  // Step 4: Create heats of 3 within each group and remember the
-  // group/block boundary so we can insert buffers when they change.
-  // Als een groep eindigt met één losse deelnemer (rest 1 bij delen door 3),
-  // herverdelen we de laatste 4 in twee heats van 2 i.p.v. een heat van 3 + 1.
+  // Step 4: Per blok alle sub-groepen tot één lijst plakken en greedy
+  // inpakken in heats van 3. Mixing van duos en singles in een
+  // overgangsheat is toegestaan binnen één blok.
+  // Als het blok eindigt met rest 1 (n % 3 === 1), splitsen we de laatste
+  // 4 deelnemers in twee heats van 2 i.p.v. een heat van 3 + een eenzame heat.
   type HeatDraft = {
     participants: Participant[];
     block: SledBlock;
-    groupKey: string;
   };
 
+  const blocksInOrder: SledBlock[] = [3, 2, 1];
   const allHeats: HeatDraft[] = [];
-  for (const g of orderedGroups) {
-    const gk = groupKey(g.category, g.division);
-    const n = g.participants.length;
+
+  for (const block of blocksInOrder) {
+    const blockParticipants = orderedGroups
+      .filter((g) => g.block === block)
+      .flatMap((g) => g.participants);
+
+    const n = blockParticipants.length;
+    if (n === 0) continue;
+
     const splitLastFour = n >= 4 && n % 3 === 1;
     const cutoff = splitLastFour ? n - 4 : n;
 
     for (let i = 0; i < cutoff; i += 3) {
       allHeats.push({
-        participants: g.participants.slice(i, i + 3),
-        block: g.block,
-        groupKey: gk,
+        participants: blockParticipants.slice(i, i + 3),
+        block,
       });
     }
 
     if (splitLastFour) {
       allHeats.push({
-        participants: g.participants.slice(cutoff, cutoff + 2),
-        block: g.block,
-        groupKey: gk,
+        participants: blockParticipants.slice(cutoff, cutoff + 2),
+        block,
       });
       allHeats.push({
-        participants: g.participants.slice(cutoff + 2, cutoff + 4),
-        block: g.block,
-        groupKey: gk,
+        participants: blockParticipants.slice(cutoff + 2, cutoff + 4),
+        block,
       });
     }
   }
 
-  // Step 5: Assign heat numbers and scheduled times.
-  // Eén leeg slot tussen categorieën én tussen blokken (sled-wissel past
-  // binnen die buffer omdat de laatste heat sowieso doorloopt).
+  // Step 5: Assign heat numbers and scheduled times. Eén leeg slot tussen
+  // blokken voor de sled-wissel; binnen een blok lopen heats direct door.
   const BUFFER_SLOTS_BETWEEN_BLOCKS = 1;
-  const BUFFER_SLOTS_BETWEEN_CATEGORIES = 1;
 
   const [baseHours, baseMinutes] = startTimeBase.split(':').map(Number);
   const baseMinutesTotal = baseHours * 60 + baseMinutes;
 
   let slotIndex = 0;
   let previousBlock: SledBlock | null = null;
-  let previousGroupKey: string | null = null;
 
   return allHeats.map((h, heatIndex) => {
     if (previousBlock !== null && h.block !== previousBlock) {
       slotIndex += BUFFER_SLOTS_BETWEEN_BLOCKS;
-    } else if (previousGroupKey !== null && h.groupKey !== previousGroupKey) {
-      slotIndex += BUFFER_SLOTS_BETWEEN_CATEGORIES;
     }
     previousBlock = h.block;
-    previousGroupKey = h.groupKey;
 
     const minutesOffset = slotIndex * intervalMinutes;
     const totalMinutes = baseMinutesTotal + minutesOffset;
