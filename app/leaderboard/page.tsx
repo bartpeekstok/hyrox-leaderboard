@@ -175,7 +175,7 @@ export default function LeaderboardPage() {
   return (
     <div className="h-screen bg-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 lg:px-14 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-3 sm:gap-5 min-w-0">
           <Link href="/" className="shrink-0">
             <Image
@@ -306,7 +306,7 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard content */}
       <div
-        className={`flex-1 min-h-0 px-3 sm:px-8 py-3 sm:py-4 ${
+        className={`flex-1 min-h-0 px-3 sm:px-8 lg:px-14 py-3 sm:py-4 lg:py-6 ${
           view === "feed"
             ? "overflow-hidden"
             : "leaderboard-scroll overflow-y-auto"
@@ -419,7 +419,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Footer: recent finishes ticker + clock */}
-      <footer className="bg-white border-t border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex items-center justify-between gap-2">
+      <footer className="bg-white border-t border-gray-200 px-3 sm:px-8 lg:px-14 py-2 sm:py-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {view === "ranking" ? (
             <>
@@ -461,9 +461,9 @@ export default function LeaderboardPage() {
   );
 }
 
-const FEED_SIZE = 10;
-const FEED_GAP = 8; // px between rows
-const MIN_ROW_HEIGHT = 56;
+const FEED_SIZE = 6;
+const FEED_GAP = 12; // px between rows
+const MIN_ROW_HEIGHT = 72;
 
 function LatestFinishersFeed({ participants }: { participants: Participant[] }) {
   const latest = useMemo(
@@ -540,22 +540,22 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
               style={{ top: i * (rowHeight + FEED_GAP), height: rowHeight }}
             >
               <div
-                className={`h-full bg-white border border-gray-200 shadow-sm rounded-lg px-8 flex items-center gap-6 ${
+                className={`h-full bg-white border border-gray-200 shadow-sm rounded-lg px-10 flex items-center gap-8 ${
                   isNew ? "animate-flash-glow" : ""
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-4xl text-gray-900 truncate">
+                  <div className="font-bold text-5xl text-gray-900 truncate">
                     {p.name}
                     {p.partnerName && <span>{" "}& {p.partnerName}</span>}
                   </div>
                 </div>
                 <div
-                  className={`px-4 py-1.5 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider text-lg`}
+                  className={`px-5 py-2 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider text-2xl`}
                 >
                   {badgeLabel}
                 </div>
-                <div className="font-mono font-bold text-5xl text-cfa-blue tabular-nums w-56 text-right">
+                <div className="font-mono font-bold text-6xl text-cfa-blue tabular-nums w-72 text-right">
                   {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                 </div>
               </div>
