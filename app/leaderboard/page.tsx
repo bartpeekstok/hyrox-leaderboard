@@ -173,9 +173,10 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="h-screen bg-gray-200 flex flex-col overflow-hidden">
+    <div className="h-screen w-screen bg-black overflow-hidden lg:py-[4vh] lg:px-[3vw]">
+    <div className="h-full w-full bg-gray-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 lg:px-24 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
+      <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-3 sm:gap-5 min-w-0">
           <Link href="/" className="shrink-0">
             <Image
@@ -306,7 +307,7 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard content */}
       <div
-        className={`flex-1 min-h-0 px-3 sm:px-8 lg:px-24 py-3 sm:py-4 lg:py-6 ${
+        className={`flex-1 min-h-0 px-3 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 ${
           view === "feed"
             ? "overflow-hidden"
             : "leaderboard-scroll overflow-y-auto"
@@ -419,7 +420,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Footer: recent finishes ticker + clock */}
-      <footer className="bg-white border-t border-gray-200 px-3 sm:px-8 lg:px-24 py-2 sm:py-3 flex items-center justify-between gap-2">
+      <footer className="bg-white border-t border-gray-200 px-3 sm:px-8 lg:px-12 py-2 sm:py-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {view === "ranking" ? (
             <>
@@ -457,6 +458,7 @@ export default function LeaderboardPage() {
           </span>
         </div>
       </footer>
+    </div>
     </div>
   );
 }
