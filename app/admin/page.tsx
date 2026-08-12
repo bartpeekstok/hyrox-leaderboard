@@ -258,6 +258,12 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/finishfoto"
+              className="bg-cfa-blue text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-cfa-blue-hover transition-colors"
+            >
+              Finishfoto
+            </Link>
             <span className="bg-cfa-blue/10 text-cfa-blue border border-cfa-blue/20 px-3 py-1 rounded-full text-sm font-semibold">
               {participants.reduce((sum, p) => sum + (p.category.startsWith("duo_") ? 2 : 1), 0)} deelnemers
             </span>

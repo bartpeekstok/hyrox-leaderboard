@@ -7,12 +7,16 @@ export function proxy(request: NextRequest) {
   if (!PUBLIC_ONLY) return NextResponse.next();
 
   const path = request.nextUrl.pathname;
-  if (path.startsWith("/admin") || path.startsWith("/race")) {
+  if (
+    path.startsWith("/admin") ||
+    path.startsWith("/race") ||
+    path.startsWith("/finishfoto")
+  ) {
     return new NextResponse("Not found", { status: 404 });
   }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/race/:path*"],
+  matcher: ["/admin/:path*", "/race/:path*", "/finishfoto/:path*"],
 };
