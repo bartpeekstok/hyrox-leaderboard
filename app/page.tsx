@@ -40,6 +40,13 @@ const CogIcon = () => (
   </IconBase>
 );
 
+const CameraIcon = () => (
+  <IconBase>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+  </IconBase>
+);
+
 const ClockIcon = () => (
   <IconBase>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -77,7 +84,7 @@ export default function Home() {
 
       <div
         className={`grid grid-cols-1 ${
-          PUBLIC_ONLY ? "md:grid-cols-2 max-w-2xl" : "md:grid-cols-4 max-w-5xl"
+          PUBLIC_ONLY ? "md:grid-cols-2 max-w-2xl" : "md:grid-cols-3 lg:grid-cols-5 max-w-6xl"
         } gap-6 w-full`}
       >
         {!PUBLIC_ONLY && (
@@ -97,6 +104,16 @@ export default function Home() {
           >
             <div className="mb-4"><ClockIcon /></div>
             <h2 className="text-xl font-bold text-cfa-ink">Race Control</h2>
+          </Link>
+        )}
+
+        {!PUBLIC_ONLY && (
+          <Link
+            href="/finishfoto"
+            className="group bg-surface border border-border rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/50 transition-all"
+          >
+            <div className="mb-4"><CameraIcon /></div>
+            <h2 className="text-xl font-bold text-cfa-ink">Finishfoto</h2>
           </Link>
         )}
 
