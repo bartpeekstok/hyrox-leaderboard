@@ -215,6 +215,23 @@ function parseTimeToMinutes(time: string): number {
   return parts[0] * 60 + parts[1];
 }
 
+// Format "2026-05-30" → "30 mei 2026" (of met weekdag: "Zaterdag 30 mei 2026")
+export function formatEventDate(dateStr: string, withWeekday = false): string {
+  if (!dateStr) return '';
+  const d = new Date(`${dateStr}T12:00:00`);
+  if (isNaN(d.getTime())) return dateStr;
+  const opts: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  };
+  if (withWeekday) opts.weekday = 'long';
+  const formatted = d.toLocaleDateString('nl-NL', opts);
+  return withWeekday
+    ? formatted.charAt(0).toUpperCase() + formatted.slice(1)
+    : formatted;
+}
+
 export function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);

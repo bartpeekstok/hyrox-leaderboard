@@ -1,5 +1,10 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatEventDate } from "./lib/types";
+import { getSettings } from "./lib/store";
 
 const PUBLIC_ONLY = process.env.NEXT_PUBLIC_PUBLIC_ONLY === "true";
 
@@ -42,8 +47,16 @@ const ClockIcon = () => (
 );
 
 export default function Home() {
+  const [raceDate, setRaceDate] = useState("2026-05-30");
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => setRaceDate(s.raceDate))
+      .catch(() => {});
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gray-200">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-background">
       <div className="text-center mb-12">
         <Image
           src="/logo_dark.png"
@@ -53,11 +66,12 @@ export default function Home() {
           className="mx-auto mb-6"
           priority
         />
-        <h1 className="text-5xl font-bold mb-2 tracking-tight text-gray-900">
+        <p className="cfa-eyebrow mb-3">CrossFit Alkmaar</p>
+        <h1 className="cfa-display text-6xl sm:text-7xl text-cfa-ink">
           HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
         </h1>
-        <p className="text-xl text-gray-600 mt-4">
-          Zaterdag 30 mei 2026 &mdash; CrossFit Alkmaar
+        <p className="text-xl text-steel-600 mt-4">
+          {formatEventDate(raceDate, true)}
         </p>
       </div>
 
@@ -69,37 +83,37 @@ export default function Home() {
         {!PUBLIC_ONLY && (
           <Link
             href="/admin"
-            className="group bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/40 transition-all"
+            className="group bg-surface border border-border rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/50 transition-all"
           >
             <div className="mb-4"><CogIcon /></div>
-            <h2 className="text-xl font-bold text-gray-900">Admin</h2>
+            <h2 className="text-xl font-bold text-cfa-ink">Admin</h2>
           </Link>
         )}
 
         {!PUBLIC_ONLY && (
           <Link
             href="/race"
-            className="group bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/40 transition-all"
+            className="group bg-surface border border-border rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/50 transition-all"
           >
             <div className="mb-4"><ClockIcon /></div>
-            <h2 className="text-xl font-bold text-gray-900">Race Control</h2>
+            <h2 className="text-xl font-bold text-cfa-ink">Race Control</h2>
           </Link>
         )}
 
         <Link
           href="/startlijst"
-          className="group bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/40 transition-all"
+          className="group bg-surface border border-border rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/50 transition-all"
         >
           <div className="mb-4"><CalendarIcon /></div>
-          <h2 className="text-xl font-bold text-gray-900">Startlijst</h2>
+          <h2 className="text-xl font-bold text-cfa-ink">Startlijst</h2>
         </Link>
 
         <Link
           href="/leaderboard"
-          className="group bg-white border border-gray-200 rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/40 transition-all"
+          className="group bg-surface border border-border rounded-lg shadow-sm p-8 hover:shadow-md hover:border-cfa-blue/50 transition-all"
         >
           <div className="mb-4"><TrophyIcon /></div>
-          <h2 className="text-xl font-bold text-gray-900">Leaderboard</h2>
+          <h2 className="text-xl font-bold text-cfa-ink">Leaderboard</h2>
         </Link>
       </div>
     </div>

@@ -45,6 +45,8 @@ export default function AdminPage() {
   const [startTime, setStartTime] = useState("09:00");
   const [heatInterval, setHeatInterval] = useState(10);
   const [sheetUrl, setSheetUrl] = useState("");
+  const [raceDate, setRaceDate] = useState("2026-05-30");
+  const [dateSaved, setDateSaved] = useState(false);
 
   // Sync state
   const [syncing, setSyncing] = useState(false);
@@ -65,6 +67,7 @@ export default function AdminPage() {
       setHeats(h);
       setStartTime(s.startTimeBase);
       setHeatInterval(s.heatInterval);
+      setRaceDate(s.raceDate);
       if (s.sheetUrl) setSheetUrl(s.sheetUrl);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -154,8 +157,14 @@ export default function AdminPage() {
     setEstimatedTime(p.estimatedTime);
   }
 
+  async function handleSaveEventDate() {
+    await updateSettings(startTime, heatInterval, sheetUrl, raceDate);
+    setDateSaved(true);
+    setTimeout(() => setDateSaved(false), 3000);
+  }
+
   async function handleGenerateHeats() {
-    await updateSettings(startTime, heatInterval, sheetUrl);
+    await updateSettings(startTime, heatInterval, sheetUrl, raceDate);
     const newHeats = generateHeats(participants, startTime, heatInterval);
     await saveHeats(newHeats);
     fetchData();
@@ -197,7 +206,7 @@ export default function AdminPage() {
     setSyncing(true);
     setSyncResult(null);
     try {
-      await updateSettings(startTime, heatInterval, sheetUrl);
+      await updateSettings(startTime, heatInterval, sheetUrl, raceDate);
       const result = await syncFromGoogleSheet(sheetUrl);
       setSyncResult(
         result.added > 0
@@ -230,7 +239,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -256,7 +265,7 @@ export default function AdminPage() {
               {heats.length} heats
             </span>
             {heats.length > 0 && participants.some((p) => !p.heatId) && (
-              <span className="bg-yellow-100 text-yellow-800 border border-yellow-300 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-cfa-yellow/15 text-cfa-yellow-hover border border-cfa-yellow/40 px-3 py-1 rounded-full text-sm font-semibold">
                 {participants.filter((p) => !p.heatId).length} zonder heat
               </span>
             )}
@@ -303,7 +312,7 @@ export default function AdminPage() {
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
                     autoSync
                       ? "bg-cfa-green/20 text-cfa-green border border-cfa-green/30"
-                      : "bg-gray-100 text-gray-600 hover:bg-white/20"
+                      : "bg-gray-100 text-gray-600 hover:bg-steel-200"
                   }`}
                 >
                   Auto {autoSync ? "AAN" : "UIT"}
@@ -403,13 +412,45 @@ export default function AdminPage() {
                       setName("");
                       setPartnerName("");
                     }}
-                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-white/20 transition-colors"
+                    className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-steel-200 transition-colors"
                   >
                     Annuleren
                   </button>
                 )}
               </div>
             </form>
+          </div>
+
+          {/* Event Settings */}
+          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
+            <h2 className="text-lg font-bold mb-4">Event</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Datum van het event
+                </label>
+                <input
+                  type="date"
+                  value={raceDate}
+                  onChange={(e) => setRaceDate(e.target.value)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:border-cfa-blue focus:ring-2 focus:ring-cfa-blue/20 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Wordt getoond op de homepage, startlijst en het leaderboard.
+                </p>
+              </div>
+              <button
+                onClick={handleSaveEventDate}
+                className="w-full bg-cfa-blue hover:bg-cfa-blue-hover text-white font-semibold py-2 rounded-lg transition-colors"
+              >
+                Datum opslaan
+              </button>
+              {dateSaved && (
+                <p className="text-sm text-cfa-green bg-cfa-green/10 rounded-lg px-3 py-2">
+                  Datum opgeslagen
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Heat Settings */}
@@ -452,13 +493,13 @@ export default function AdminPage() {
           </div>
 
           {/* Danger zone */}
-          <div className="bg-white border border-red-200 rounded-lg shadow-sm p-6">
-            <h3 className="text-sm font-bold text-red-600 mb-3 uppercase tracking-wider">
+          <div className="bg-white border border-cfa-red/30 rounded-lg shadow-sm p-6">
+            <h3 className="text-sm font-bold text-cfa-red mb-3 uppercase tracking-wider">
               Danger Zone
             </h3>
             <button
               onClick={handleDeleteAll}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition-colors text-sm"
+              className="w-full bg-cfa-red hover:bg-cfa-red/85 text-white font-semibold py-2 rounded-lg transition-colors text-sm"
             >
               Alle deelnemers verwijderen
             </button>
@@ -501,7 +542,7 @@ export default function AdminPage() {
                   return (
                     <div
                       key={heat.id}
-                      className="bg-black/20 border border-white/5 rounded-lg p-3"
+                      className="bg-surface-muted border border-border rounded-lg p-3"
                     >
                       <div className="flex justify-between items-center mb-2">
                         <span className="font-bold text-sm">
@@ -595,7 +636,7 @@ export default function AdminPage() {
                                   className={`text-xs border rounded px-1 py-0.5 focus:outline-none ${
                                     p.heatId
                                       ? "bg-cfa-blue/10 text-cfa-blue border-cfa-blue/20"
-                                      : "bg-yellow-50 text-yellow-800 border-yellow-300 font-semibold"
+                                      : "bg-cfa-yellow/10 text-cfa-yellow-hover border-cfa-yellow/40 font-semibold"
                                   }`}
                                 >
                                   <option value="" disabled>

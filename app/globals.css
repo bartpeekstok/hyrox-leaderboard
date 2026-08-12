@@ -1,20 +1,40 @@
 @import "tailwindcss";
 
+/* ============================================================
+   CrossFit Alkmaar huisstijl — tokens gesampled uit het CFA-logo
+   (zelfde waarden als colors_and_type.css op de hoofdsite)
+   ============================================================ */
 :root {
-  --cfa-navy: #1a1a2e;
-  --cfa-blue: #1e3a8a;
-  --cfa-blue-hover: #1e40af;
-  --cfa-blue-deep: #172554;
-  --cfa-dark: #111827;
-  --cfa-yellow: #f59e0b;
-  --cfa-yellow-hover: #d97706;
-  --cfa-green: #10b981;
-  --cfa-red: #ef4444;
-  --background: #e5e7eb;
-  --foreground: #111827;
+  /* Brand core */
+  --cfa-ink: #0b0f1e; /* near-black navy — wordmark */
+  --cfa-navy: #0b0f1e;
+  --cfa-blue: #183090; /* royal blue — laurels (primary) */
+  --cfa-blue-hover: #2a48c8; /* lifted royal — hover / energy */
+  --cfa-blue-deep: #101f5e; /* pressed / deep field */
+  --cfa-dark: #12182b;
+  --cfa-chalk: #f4f5f7;
+
+  /* Semantic (muted-athletic) */
+  --cfa-yellow: #e0a325; /* hold / warning */
+  --cfa-yellow-hover: #c08a1a;
+  --cfa-green: #1f9d55; /* go / success */
+  --cfa-red: #d23a36; /* stop / error */
+
+  /* Steel neutrals (cool, afgeleid van ink) */
+  --steel-600: #3d475f;
+  --steel-500: #5a647c;
+  --steel-400: #828ba0;
+  --steel-300: #a8afc0;
+  --steel-200: #cdd2dd;
+  --steel-100: #e5e8ef;
+  --steel-50: #f4f5f7;
+
+  /* Surface / text roles */
+  --background: var(--cfa-chalk);
+  --foreground: var(--cfa-ink);
   --surface: #ffffff;
-  --surface-muted: #f3f4f6;
-  --border: #e5e7eb;
+  --surface-muted: var(--steel-100);
+  --border: var(--steel-200);
 }
 
 @theme inline {
@@ -23,22 +43,78 @@
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);
+  --color-cfa-ink: var(--cfa-ink);
   --color-cfa-navy: var(--cfa-navy);
   --color-cfa-blue: var(--cfa-blue);
   --color-cfa-blue-hover: var(--cfa-blue-hover);
   --color-cfa-blue-deep: var(--cfa-blue-deep);
   --color-cfa-dark: var(--cfa-dark);
+  --color-cfa-chalk: var(--cfa-chalk);
   --color-cfa-yellow: var(--cfa-yellow);
   --color-cfa-yellow-hover: var(--cfa-yellow-hover);
   --color-cfa-green: var(--cfa-green);
   --color-cfa-red: var(--cfa-red);
-  --font-sans: "Inter", system-ui, sans-serif;
+  --color-steel-600: var(--steel-600);
+  --color-steel-500: var(--steel-500);
+  --color-steel-400: var(--steel-400);
+  --color-steel-300: var(--steel-300);
+  --color-steel-200: var(--steel-200);
+  --color-steel-100: var(--steel-100);
+  --color-steel-50: var(--steel-50);
+
+  /* Type: Anton = display, Oswald = headings, Barlow = body,
+     Barlow Semi Condensed = stats/tijden */
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-anton), var(--font-oswald), "Arial Narrow", sans-serif;
+  --font-head: var(--font-oswald), var(--font-barlow-semi), sans-serif;
+  --font-stat: var(--font-barlow-semi), var(--font-oswald), sans-serif;
+
+  /* Boxy & industrial — bijna niets is rond */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 8px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-barlow), system-ui, sans-serif;
+}
+
+/* Athletic voice: condensed uppercase headings, overal */
+h1,
+h2,
+h3 {
+  font-family: var(--font-oswald), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.cfa-display {
+  font-family: var(--font-anton), var(--font-oswald), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+}
+
+.cfa-eyebrow {
+  font-family: var(--font-oswald), sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cfa-blue);
+}
+
+.cfa-stat {
+  font-family: var(--font-barlow-semi), var(--font-oswald), sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 /* Leaderboard animations */
@@ -55,10 +131,10 @@ body {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(30, 58, 138, 0.25);
+    box-shadow: 0 0 5px rgba(24, 48, 144, 0.25);
   }
   50% {
-    box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
+    box-shadow: 0 0 20px rgba(24, 48, 144, 0.5);
   }
 }
 
@@ -78,11 +154,11 @@ body {
 
 @keyframes flashGlow {
   0% {
-    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.35);
-    background-color: rgba(30, 58, 138, 0.10);
+    box-shadow: 0 0 0 4px rgba(24, 48, 144, 0.35);
+    background-color: rgba(24, 48, 144, 0.1);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(30, 58, 138, 0);
+    box-shadow: 0 0 0 0 rgba(24, 48, 144, 0);
     background-color: #ffffff;
   }
 }
@@ -109,10 +185,10 @@ body {
 }
 
 .leaderboard-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(11, 15, 30, 0.05);
 }
 
 .leaderboard-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(11, 15, 30, 0.2);
   border-radius: 3px;
 }

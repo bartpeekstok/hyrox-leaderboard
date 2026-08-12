@@ -38,7 +38,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
   if (authenticated) return <>{children}</>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-gray-200">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-background">
       <form
         onSubmit={submit}
         className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm p-8"

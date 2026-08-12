@@ -10,8 +10,9 @@ import {
   getClassLabel,
   getRaceClass,
   formatTime,
+  formatEventDate,
 } from "../lib/types";
-import { getParticipants } from "../lib/store";
+import { getParticipants, getSettings } from "../lib/store";
 import { supabase } from "../lib/supabase";
 
 type FilterKey = "all" | `${Division}_${Category}`;
@@ -28,6 +29,13 @@ export default function LeaderboardPage() {
   const [autoRotate, setAutoRotate] = useState(!PUBLIC_ONLY);
   const filtersRef = useRef<FilterKey[]>(["all"]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [raceDate, setRaceDate] = useState("2026-05-30");
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => setRaceDate(s.raceDate))
+      .catch(() => {});
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -166,15 +174,15 @@ export default function LeaderboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl text-gray-500">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-screen bg-black overflow-hidden lg:py-[4vh] lg:px-[3vw]">
-    <div className="h-full w-full bg-gray-200 flex flex-col overflow-hidden">
+    <div className="h-screen w-screen bg-cfa-ink overflow-hidden lg:py-[4vh] lg:px-[3vw]">
+    <div className="h-full w-full bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-3 sm:gap-5 min-w-0">
@@ -189,20 +197,20 @@ export default function LeaderboardPage() {
           </Link>
           <div className="hidden sm:block h-10 w-px bg-gray-300" />
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-3xl font-bold tracking-tight text-gray-900 truncate">
+            <h1 className="cfa-display text-xl sm:text-4xl text-cfa-ink truncate">
               HYROX <span className="text-cfa-blue">LEADERBOARD</span>
             </h1>
-            <p className="text-xs text-gray-500 truncate leading-tight">
+            <p className="text-xs text-steel-500 truncate leading-tight">
               CrossFit Alkmaar
             </p>
-            <p className="text-xs text-gray-500 truncate leading-tight">
-              30 mei 2026
+            <p className="text-xs text-steel-500 truncate leading-tight">
+              {formatEventDate(raceDate)}
             </p>
           </div>
         </div>
         <div className="flex items-center justify-around sm:justify-end gap-3 sm:gap-6 sm:shrink-0">
           <div className="text-center">
-            <div className="text-2xl sm:text-4xl font-mono font-bold text-cfa-green leading-none">
+            <div className="cfa-stat text-2xl sm:text-4xl text-cfa-green leading-none">
               {totalRacing}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -210,7 +218,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-4xl font-mono font-bold text-cfa-blue leading-none">
+            <div className="cfa-stat text-2xl sm:text-4xl text-cfa-blue leading-none">
               {totalFinished}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -218,7 +226,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl sm:text-4xl font-mono font-bold text-gray-400 leading-none">
+            <div className="cfa-stat text-2xl sm:text-4xl text-steel-400 leading-none">
               {totalParticipants}
             </div>
             <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">
@@ -447,7 +455,7 @@ export default function LeaderboardPage() {
         </div>
         <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-4 shrink-0">
           <span className="hidden sm:inline text-sm text-gray-500">
-            CrossFit Alkmaar &mdash; 30 mei 2026
+            CrossFit Alkmaar &mdash; {formatEventDate(raceDate)}
           </span>
           <span className="font-mono text-sm sm:text-lg text-gray-600">
             {new Date().toLocaleTimeString("nl-NL", {
@@ -557,7 +565,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                 >
                   {badgeLabel}
                 </div>
-                <div className="font-mono font-bold text-6xl text-cfa-blue tabular-nums w-72 text-right">
+                <div className="cfa-stat text-6xl text-cfa-blue w-72 text-right">
                   {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                 </div>
               </div>

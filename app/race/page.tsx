@@ -280,7 +280,7 @@ export default function RaceControlPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -347,7 +347,7 @@ export default function RaceControlPage() {
             </div>
             <button
               type="submit"
-              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold text-xl px-10 py-4 rounded-xl transition-colors order-1 sm:order-1"
+              className="bg-cfa-green hover:bg-cfa-green/85 text-white font-bold text-xl px-10 py-4 rounded-xl transition-colors order-1 sm:order-1"
             >
               FINISH
             </button>
@@ -392,7 +392,7 @@ export default function RaceControlPage() {
               </div>
               <button
                 onClick={() => dismissWissel(w.id)}
-                className="bg-cfa-green hover:bg-emerald-500 text-black font-bold px-6 py-3 rounded-xl transition-colors shadow"
+                className="bg-cfa-green hover:bg-cfa-green/85 text-white font-bold px-6 py-3 rounded-xl transition-colors shadow"
               >
                 Wissel voltooid
               </button>
@@ -445,7 +445,7 @@ export default function RaceControlPage() {
                 return (
                   <div
                     key={id}
-                    className="bg-black/30 rounded-lg p-3 text-center"
+                    className="bg-surface-muted border border-border rounded-lg p-3 text-center"
                   >
                     <div className="text-cfa-blue font-mono font-bold text-2xl mb-1">
                       #{p.startNumber}
@@ -549,7 +549,7 @@ export default function RaceControlPage() {
                           ) : (
                             <button
                               onClick={() => handleFinishClick(p.id)}
-                              className="bg-cfa-green hover:bg-emerald-500 text-black font-bold px-6 py-2 rounded-lg transition-colors w-full"
+                              className="bg-cfa-green hover:bg-cfa-green/85 text-white font-bold px-6 py-2 rounded-lg transition-colors w-full"
                             >
                               FINISH #{p.startNumber}
                             </button>
@@ -574,7 +574,7 @@ export default function RaceControlPage() {
               {scheduledHeats.slice(1, 10).map((heat) => (
                 <div
                   key={heat.id}
-                  className="bg-white/40 border border-white/5 rounded-lg p-3"
+                  className="bg-surface border border-border rounded-lg p-3"
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-sm">

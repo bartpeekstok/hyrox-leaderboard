@@ -7,6 +7,7 @@ import {
   Participant,
   Heat,
   getClassLabel,
+  formatEventDate,
 } from "../lib/types";
 import { getParticipants, getHeats, getSettings } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -16,6 +17,7 @@ export default function StartlijstPage() {
   const [heats, setHeats] = useState<Heat[]>([]);
   const [startTimeBase, setStartTimeBase] = useState("09:00");
   const [heatInterval, setHeatInterval] = useState(10);
+  const [raceDate, setRaceDate] = useState("2026-05-30");
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -29,6 +31,7 @@ export default function StartlijstPage() {
       setHeats(h);
       setStartTimeBase(s.startTimeBase);
       setHeatInterval(s.heatInterval);
+      setRaceDate(s.raceDate);
     } catch (err) {
       console.error("Error fetching startlijst:", err);
     }
@@ -77,14 +80,14 @@ export default function StartlijstPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-200">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-xl text-gray-500">Laden...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-200 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="bg-white border-b border-gray-200 shadow-sm px-3 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 sticky top-0 z-10">
         <Link href="/" className="shrink-0">
           <Image
@@ -97,14 +100,14 @@ export default function StartlijstPage() {
         </Link>
         <div className="h-10 w-px bg-gray-300 shrink-0" />
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="cfa-display text-xl sm:text-3xl text-cfa-ink">
             STARTLIJST
           </h1>
-          <p className="text-xs text-gray-500 truncate leading-tight">
+          <p className="text-xs text-steel-500 truncate leading-tight">
             CrossFit Alkmaar
           </p>
-          <p className="text-xs text-gray-500 truncate leading-tight">
-            30 mei 2026
+          <p className="text-xs text-steel-500 truncate leading-tight">
+            {formatEventDate(raceDate)}
           </p>
         </div>
       </header>

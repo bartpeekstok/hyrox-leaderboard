@@ -367,22 +367,29 @@ export async function getSettings() {
     .single();
 
   if (error || !data) {
-    return { startTimeBase: '09:00', heatInterval: 10, sheetUrl: '' };
+    return { startTimeBase: '09:00', heatInterval: 10, sheetUrl: '', raceDate: '2026-05-30' };
   }
 
   return {
     startTimeBase: data.start_time_base,
     heatInterval: data.heat_interval,
     sheetUrl: data.sheet_url || '',
+    raceDate: data.race_date || '2026-05-30',
   };
 }
 
-export async function updateSettings(startTimeBase: string, heatInterval: number, sheetUrl?: string) {
+export async function updateSettings(
+  startTimeBase: string,
+  heatInterval: number,
+  sheetUrl?: string,
+  raceDate?: string
+) {
   const updates: Record<string, unknown> = {
     start_time_base: startTimeBase,
     heat_interval: heatInterval,
   };
   if (sheetUrl !== undefined) updates.sheet_url = sheetUrl;
+  if (raceDate !== undefined) updates.race_date = raceDate;
 
   await supabase
     .from('hyrox_settings')
