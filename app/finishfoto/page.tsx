@@ -130,10 +130,6 @@ export default function FinishfotoPage() {
 
         {participant ? (
           <>
-            <div className="cfa-stat text-cfa-blue/60 text-[3.2vh] mb-[1vh]">
-              #{participant.startNumber}
-            </div>
-
             <h2 className="cfa-display text-cfa-ink text-[9vh] leading-[0.95] break-words max-w-full">
               {participant.name}
             </h2>
