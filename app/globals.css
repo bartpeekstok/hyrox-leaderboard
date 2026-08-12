@@ -95,6 +95,14 @@ h3 {
   letter-spacing: 0.01em;
 }
 
+/* Brand board: knoppen in Oswald 600/700, uppercase */
+button {
+  font-family: var(--font-oswald), sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .cfa-display {
   font-family: var(--font-anton), var(--font-oswald), sans-serif;
   font-weight: 400;

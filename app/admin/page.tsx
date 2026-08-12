@@ -485,7 +485,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={handleGenerateHeats}
-                className="w-full bg-cfa-blue hover:bg-cfa-blue-hover text-white font-bold py-3 rounded-lg transition-colors text-lg"
+                className="w-full bg-cfa-yellow hover:bg-cfa-yellow-hover text-cfa-ink font-bold py-3 rounded-lg transition-colors text-lg"
               >
                 Heat-indeling genereren
               </button>

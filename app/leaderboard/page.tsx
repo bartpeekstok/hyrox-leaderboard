@@ -156,7 +156,7 @@ export default function LeaderboardPage() {
 
   function getMedalColor(rank: number): string {
     switch (rank) {
-      case 1: return "text-yellow-500";
+      case 1: return "text-cfa-yellow";
       case 2: return "text-gray-500";
       case 3: return "text-amber-700";
       default: return "text-gray-400";
@@ -165,7 +165,7 @@ export default function LeaderboardPage() {
 
   function getMedalBg(rank: number): string {
     switch (rank) {
-      case 1: return "bg-yellow-50 border-yellow-300";
+      case 1: return "bg-cfa-yellow/10 border-cfa-yellow/40";
       case 2: return "bg-gray-50 border-gray-300";
       case 3: return "bg-amber-50 border-amber-300";
       default: return "bg-white border-gray-200";
@@ -414,7 +414,7 @@ export default function LeaderboardPage() {
 
         {finishedParticipants.length === 0 && racingParticipants.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">&#127939;</div>
+            <TimerIcon />
             <p className="text-2xl text-gray-500">
               Wachten op de eerste finishers...
             </p>
@@ -468,6 +468,14 @@ export default function LeaderboardPage() {
   );
 }
 
+const TimerIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-16 h-16 mx-auto mb-4 text-steel-300">
+    <line x1="10" x2="14" y1="2" y2="2" />
+    <line x1="12" x2="15" y1="14" y2="11" />
+    <circle cx="12" cy="14" r="8" />
+  </svg>
+);
+
 const FEED_SIZE = 6;
 const FEED_GAP = 12; // px between rows
 const MIN_ROW_HEIGHT = 72;
@@ -519,7 +527,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
   if (latest.length === 0) {
     return (
       <div className="text-center py-20">
-        <div className="text-6xl mb-4">&#127939;</div>
+        <TimerIcon />
         <p className="text-2xl text-gray-500">
           Wachten op de eerste finishers...
         </p>
@@ -534,7 +542,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
           const rc = getRaceClass(p.division, p.category);
           const badgeLabel = getClassLabel(p).toUpperCase();
           const badgeClasses = rc.startsWith("doubles_")
-            ? "bg-cfa-yellow text-black"
+            ? "bg-cfa-yellow text-cfa-ink"
             : rc.endsWith("_pro")
               ? "bg-cfa-blue text-white"
               : "bg-cfa-green text-white";

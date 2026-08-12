@@ -373,7 +373,9 @@ export default function RaceControlPage() {
           >
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-4">
-                <div className="text-4xl">🔧</div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-cfa-yellow-hover shrink-0">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
                 <div>
                   <h2 className="text-xl font-bold text-amber-900">
                     Sled wissel
@@ -430,7 +432,7 @@ export default function RaceControlPage() {
                 className={`font-bold text-xl px-10 py-4 rounded-xl transition-colors shadow-lg ${
                   confirmingStartId === nextHeat.id
                     ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
-                    : "bg-cfa-blue hover:bg-cfa-blue-hover text-white"
+                    : "bg-cfa-yellow hover:bg-cfa-yellow-hover text-cfa-ink"
                 }`}
               >
                 {confirmingStartId === nextHeat.id
