@@ -338,12 +338,14 @@ export default function LeaderboardPage() {
                     <span className="text-cfa-blue font-mono font-bold text-base sm:text-lg shrink-0">
                       #{p.startNumber}
                     </span>
-                    <span className="font-medium text-gray-900 truncate">
-                      {p.name}
-                      {p.partnerName && (
-                        <span>
-                          {" "}& {p.partnerName}
+                    <span className="font-medium text-gray-900 min-w-0">
+                      {p.partnerName ? (
+                        <span className="block leading-tight">
+                          <span className="block truncate">{p.name}</span>
+                          <span className="block truncate">& {p.partnerName}</span>
                         </span>
+                      ) : (
+                        <span className="block truncate">{p.name}</span>
                       )}
                     </span>
                   </div>
@@ -379,10 +381,16 @@ export default function LeaderboardPage() {
 
                 {/* Name & Category */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-base sm:text-2xl text-gray-900 truncate">
-                    {p.name}
-                    {p.partnerName && <span>{" "}& {p.partnerName}</span>}
-                  </div>
+                  {p.partnerName ? (
+                    <div className="font-bold text-sm sm:text-xl leading-tight text-gray-900">
+                      <div className="truncate">{p.name}</div>
+                      <div className="truncate">& {p.partnerName}</div>
+                    </div>
+                  ) : (
+                    <div className="font-bold text-base sm:text-2xl text-gray-900 truncate">
+                      {p.name}
+                    </div>
+                  )}
                   {filter === "all" && (
                     <div className="text-xs sm:text-sm text-gray-500 truncate">
                       {getClassLabel(p)}
@@ -560,10 +568,16 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-5xl text-gray-900 truncate">
-                    {p.name}
-                    {p.partnerName && <span>{" "}& {p.partnerName}</span>}
-                  </div>
+                  {p.partnerName ? (
+                    <div className="font-bold text-3xl xl:text-4xl leading-tight text-gray-900">
+                      <div className="truncate">{p.name}</div>
+                      <div className="truncate">& {p.partnerName}</div>
+                    </div>
+                  ) : (
+                    <div className="font-bold text-5xl text-gray-900 truncate">
+                      {p.name}
+                    </div>
+                  )}
                 </div>
                 <div
                   className={`px-5 py-2 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider text-2xl`}
