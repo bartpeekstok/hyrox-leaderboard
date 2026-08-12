@@ -72,7 +72,7 @@ export default function FinishfotoPage() {
     : "";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen overflow-hidden bg-background flex flex-col">
       {/* Bedieningsbalk — klein, valt weg op de foto */}
       <header className="px-4 py-3 flex items-center gap-3">
         <Link
@@ -110,8 +110,8 @@ export default function FinishfotoPage() {
         </button>
       </header>
 
-      {/* Foto-kader */}
-      <main className="flex-1 flex flex-col items-center justify-center px-8 pb-12 text-center">
+      {/* Foto-kader — alle maten in vh zodat alles altijd in beeld past */}
+      <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-8 pb-[2vh] text-center">
         {/* Vast kader: logo, eventnaam, datum */}
         <Image
           src="/logo_dark.png"
@@ -119,42 +119,42 @@ export default function FinishfotoPage() {
           width={400}
           height={200}
           priority
-          className="h-auto w-[clamp(160px,18vw,340px)] mb-4"
+          className="w-auto h-[16vh] mb-[1.5vh]"
         />
-        <h1 className="cfa-display text-cfa-ink text-[clamp(30px,4.5vw,80px)] leading-none">
+        <h1 className="cfa-display text-cfa-ink text-[6vh] leading-none">
           HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
         </h1>
-        <p className="text-cfa-ink font-semibold text-[clamp(16px,1.8vw,32px)] mt-2 mb-8">
+        <p className="text-cfa-ink font-semibold text-[2.6vh] mt-[1vh] mb-[3vh]">
           {formatEventDate(raceDate, true)}
         </p>
 
         {participant ? (
           <>
-            <div className="cfa-stat text-cfa-blue/60 text-[clamp(20px,2.5vw,44px)] mb-4">
+            <div className="cfa-stat text-cfa-blue/60 text-[3.2vh] mb-[1vh]">
               #{participant.startNumber}
             </div>
 
-            <h2 className="cfa-display text-cfa-ink text-[clamp(36px,6.5vw,120px)] leading-[0.95] break-words max-w-full">
+            <h2 className="cfa-display text-cfa-ink text-[9vh] leading-[0.95] break-words max-w-full">
               {participant.name}
             </h2>
             {participant.partnerName && (
-              <h2 className="cfa-display text-cfa-ink text-[clamp(36px,6.5vw,120px)] leading-[0.95] break-words max-w-full">
+              <h2 className="cfa-display text-cfa-ink text-[9vh] leading-[0.95] break-words max-w-full">
                 {participant.partnerName}
               </h2>
             )}
 
             <div
-              className={`mt-8 px-8 py-3 rounded-lg font-bold uppercase tracking-wider text-[clamp(18px,2.2vw,40px)] ${badgeClasses}`}
+              className={`mt-[2.5vh] px-8 py-[1.2vh] rounded-lg font-bold uppercase tracking-wider text-[3vh] ${badgeClasses}`}
             >
               {getClassLabel(participant)}
             </div>
 
             {participant.status === "finished" && participant.totalTime ? (
-              <div className="cfa-stat text-cfa-blue text-[clamp(60px,10vw,190px)] leading-none mt-8">
+              <div className="cfa-stat text-cfa-blue text-[13vh] leading-none mt-[2.5vh]">
                 {formatTime(participant.totalTime)}
               </div>
             ) : (
-              <p className="text-steel-500 font-semibold text-[clamp(20px,2.5vw,44px)] mt-10">
+              <p className="text-steel-500 font-semibold text-[3.5vh] mt-[3vh]">
                 {participant.status === "racing"
                   ? "Nog onderweg..."
                   : "Nog niet gestart"}
