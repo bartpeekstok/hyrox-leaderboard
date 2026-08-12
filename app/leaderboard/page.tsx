@@ -568,22 +568,16 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  {p.partnerName ? (
-                    <div
-                      className="font-bold text-gray-900"
-                      style={{ fontSize: Math.floor(rowHeight * 0.28), lineHeight: 1.2 }}
-                    >
-                      <div className="truncate">{p.name}</div>
-                      <div className="truncate">{p.partnerName}</div>
-                    </div>
-                  ) : (
-                    <div
-                      className="font-bold text-gray-900 truncate"
-                      style={{ fontSize: Math.floor(rowHeight * 0.4), lineHeight: 1.2 }}
-                    >
-                      {p.name}
-                    </div>
-                  )}
+                  <div
+                    className="font-bold text-gray-900 truncate"
+                    style={{
+                      fontSize: Math.floor(rowHeight * (p.partnerName ? 0.34 : 0.4)),
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {p.name}
+                    {p.partnerName && ` & ${p.partnerName}`}
+                  </div>
                 </div>
                 <div
                   className={`px-5 py-2 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider`}
