@@ -197,14 +197,11 @@ export default function LeaderboardPage() {
           </Link>
           <div className="hidden sm:block h-10 w-px bg-gray-300" />
           <div className="min-w-0">
-            <h1 className="cfa-display text-xl sm:text-4xl text-cfa-ink truncate">
+            <h1 className="cfa-display text-3xl sm:text-6xl text-cfa-ink truncate">
               HYROX <span className="text-cfa-blue">LEADERBOARD</span>
             </h1>
-            <p className="text-xs text-steel-500 truncate leading-tight">
-              CrossFit Alkmaar
-            </p>
-            <p className="text-xs text-steel-500 truncate leading-tight">
-              {formatEventDate(raceDate)}
+            <p className="text-sm sm:text-lg text-steel-500 truncate leading-snug">
+              CrossFit Alkmaar &mdash; {formatEventDate(raceDate)}
             </p>
           </div>
         </div>
@@ -293,7 +290,7 @@ export default function LeaderboardPage() {
 
       {/* Filter pills (only in ranking view) */}
       {view === "ranking" && availableFilters.length > 1 && (
-        <div className="bg-gray-50 border-b border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex gap-2 overflow-x-auto sm:flex-wrap sm:items-center flex-shrink-0">
+        <div className="bg-cfa-cream border-b border-gray-200 px-3 sm:px-8 py-2 sm:py-3 flex gap-2 overflow-x-auto sm:flex-wrap sm:items-center flex-shrink-0">
           {availableFilters.map((f) => (
             <button
               key={f}

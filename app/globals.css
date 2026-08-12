@@ -13,6 +13,7 @@
   --cfa-blue-deep: #101f5e; /* pressed / deep field */
   --cfa-dark: #12182b;
   --cfa-chalk: #f4f5f7;
+  --cfa-cream: #fffdf8; /* warme crème — body-achtergrond hoofdsite */
 
   /* Semantic (muted-athletic) */
   --cfa-yellow: #e0a325; /* hold / warning */
@@ -30,7 +31,7 @@
   --steel-50: #f4f5f7;
 
   /* Surface / text roles */
-  --background: var(--cfa-chalk);
+  --background: var(--cfa-cream);
   --foreground: var(--cfa-ink);
   --surface: #ffffff;
   --surface-muted: var(--steel-100);
@@ -50,6 +51,7 @@
   --color-cfa-blue-deep: var(--cfa-blue-deep);
   --color-cfa-dark: var(--cfa-dark);
   --color-cfa-chalk: var(--cfa-chalk);
+  --color-cfa-cream: var(--cfa-cream);
   --color-cfa-yellow: var(--cfa-yellow);
   --color-cfa-yellow-hover: var(--cfa-yellow-hover);
   --color-cfa-green: var(--cfa-green);

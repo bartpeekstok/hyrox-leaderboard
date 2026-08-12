@@ -100,14 +100,11 @@ export default function StartlijstPage() {
         </Link>
         <div className="h-10 w-px bg-gray-300 shrink-0" />
         <div className="min-w-0">
-          <h1 className="cfa-display text-xl sm:text-3xl text-cfa-ink">
+          <h1 className="cfa-display text-2xl sm:text-5xl text-cfa-ink">
             STARTLIJST
           </h1>
-          <p className="text-xs text-steel-500 truncate leading-tight">
-            CrossFit Alkmaar
-          </p>
-          <p className="text-xs text-steel-500 truncate leading-tight">
-            {formatEventDate(raceDate)}
+          <p className="text-sm sm:text-base text-steel-500 truncate leading-snug">
+            CrossFit Alkmaar &mdash; {formatEventDate(raceDate)}
           </p>
         </div>
       </header>
@@ -135,7 +132,7 @@ export default function StartlijstPage() {
                   key={heat.id}
                   className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
                 >
-                  <div className="bg-gray-50 px-3 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200">
+                  <div className="bg-cfa-cream px-3 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200">
                     <div className="flex items-center gap-3 sm:gap-4">
                       <div className="text-cfa-blue font-bold text-lg sm:text-xl">
                         Heat {heat.heatNumber}
@@ -154,7 +151,7 @@ export default function StartlijstPage() {
                     {heatParticipants.map((p) => (
                         <div
                           key={p.id}
-                          className="px-3 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 hover:bg-gray-50 transition-colors"
+                          className="px-3 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 hover:bg-cfa-cream transition-colors"
                         >
                           <div className="text-cfa-blue font-mono font-bold text-base sm:text-lg w-12 sm:w-14 shrink-0">
                             #{p.startNumber}

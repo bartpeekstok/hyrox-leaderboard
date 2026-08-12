@@ -611,7 +611,7 @@ export default function AdminPage() {
                         .map((p) => (
                           <div
                             key={p.id}
-                            className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 group"
+                            className="flex items-center justify-between bg-cfa-cream border border-gray-200 rounded-lg px-3 py-2 group"
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-cfa-blue font-mono font-bold text-sm w-8">
