@@ -124,7 +124,7 @@ export default function FinishfotoPage() {
         <h1 className="cfa-display text-cfa-ink text-[9vh] leading-none">
           HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
         </h1>
-        <p className="text-cfa-ink font-semibold text-[3vh] mt-[1vh] mb-[2.5vh]">
+        <p className="text-cfa-ink font-semibold text-[3vh] mt-[1vh] mb-[6vh]">
           {formatEventDate(raceDate, true)}
         </p>
 
