@@ -563,28 +563,38 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
               style={{ top: i * (rowHeight + FEED_GAP), height: rowHeight }}
             >
               <div
-                className={`h-full bg-white border border-gray-200 shadow-sm rounded-lg px-10 flex items-center gap-8 ${
+                className={`h-full bg-white border border-gray-200 shadow-sm rounded-lg px-10 py-2 flex items-center gap-8 overflow-hidden ${
                   isNew ? "animate-flash-glow" : ""
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   {p.partnerName ? (
-                    <div className="font-bold text-3xl xl:text-4xl leading-tight text-gray-900">
+                    <div
+                      className="font-bold text-gray-900"
+                      style={{ fontSize: Math.floor(rowHeight * 0.28), lineHeight: 1.2 }}
+                    >
                       <div className="truncate">{p.name}</div>
                       <div className="truncate">{p.partnerName}</div>
                     </div>
                   ) : (
-                    <div className="font-bold text-5xl text-gray-900 truncate">
+                    <div
+                      className="font-bold text-gray-900 truncate"
+                      style={{ fontSize: Math.floor(rowHeight * 0.4), lineHeight: 1.2 }}
+                    >
                       {p.name}
                     </div>
                   )}
                 </div>
                 <div
-                  className={`px-5 py-2 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider text-2xl`}
+                  className={`px-5 py-2 rounded-lg ${badgeClasses} font-bold uppercase tracking-wider`}
+                  style={{ fontSize: Math.max(14, Math.floor(rowHeight * 0.17)) }}
                 >
                   {badgeLabel}
                 </div>
-                <div className="cfa-stat text-6xl text-cfa-blue w-72 text-right">
+                <div
+                  className="cfa-stat text-cfa-blue w-72 text-right"
+                  style={{ fontSize: Math.floor(rowHeight * 0.42) }}
+                >
                   {p.totalTime ? formatTime(p.totalTime) : "--:--"}
                 </div>
               </div>
