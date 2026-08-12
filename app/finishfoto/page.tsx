@@ -75,14 +75,11 @@ export default function FinishfotoPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Bedieningsbalk — klein, valt weg op de foto */}
       <header className="px-4 py-3 flex items-center gap-3">
-        <Link href="/" className="shrink-0">
-          <Image
-            src="/logo_dark.png"
-            alt="CrossFit Alkmaar"
-            width={80}
-            height={40}
-            className="h-auto w-16"
-          />
+        <Link
+          href="/"
+          className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-steel-200 transition-colors shrink-0"
+        >
+          Home
         </Link>
         <input
           ref={inputRef}
@@ -114,27 +111,36 @@ export default function FinishfotoPage() {
       </header>
 
       {/* Foto-kader */}
-      <main className="flex-1 flex flex-col items-center justify-center px-8 pb-16 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-8 pb-12 text-center">
+        {/* Vast kader: logo, eventnaam, datum */}
+        <Image
+          src="/logo_dark.png"
+          alt="CrossFit Alkmaar"
+          width={400}
+          height={200}
+          priority
+          className="h-auto w-[clamp(160px,18vw,340px)] mb-4"
+        />
+        <h1 className="cfa-display text-cfa-ink text-[clamp(30px,4.5vw,80px)] leading-none">
+          HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
+        </h1>
+        <p className="text-cfa-ink font-semibold text-[clamp(16px,1.8vw,32px)] mt-2 mb-8">
+          {formatEventDate(raceDate, true)}
+        </p>
+
         {participant ? (
           <>
-            <p className="cfa-eyebrow !text-[clamp(14px,1.6vw,26px)] mb-2">
-              HYROX Race Simulation &mdash; CrossFit Alkmaar
-            </p>
-            <p className="text-steel-500 font-semibold text-[clamp(14px,1.4vw,24px)] mb-8">
-              {formatEventDate(raceDate, true)}
-            </p>
-
             <div className="cfa-stat text-cfa-blue/60 text-[clamp(20px,2.5vw,44px)] mb-4">
               #{participant.startNumber}
             </div>
 
-            <h1 className="cfa-display text-cfa-ink text-[clamp(40px,7.5vw,140px)] leading-[0.95] break-words max-w-full">
+            <h2 className="cfa-display text-cfa-ink text-[clamp(36px,6.5vw,120px)] leading-[0.95] break-words max-w-full">
               {participant.name}
-            </h1>
+            </h2>
             {participant.partnerName && (
-              <h1 className="cfa-display text-cfa-ink text-[clamp(40px,7.5vw,140px)] leading-[0.95] break-words max-w-full">
+              <h2 className="cfa-display text-cfa-ink text-[clamp(36px,6.5vw,120px)] leading-[0.95] break-words max-w-full">
                 {participant.partnerName}
-              </h1>
+              </h2>
             )}
 
             <div
@@ -144,7 +150,7 @@ export default function FinishfotoPage() {
             </div>
 
             {participant.status === "finished" && participant.totalTime ? (
-              <div className="cfa-stat text-cfa-blue text-[clamp(70px,13vw,240px)] leading-none mt-8">
+              <div className="cfa-stat text-cfa-blue text-[clamp(60px,10vw,190px)] leading-none mt-8">
                 {formatTime(participant.totalTime)}
               </div>
             ) : (
@@ -160,12 +166,9 @@ export default function FinishfotoPage() {
             Startnummer {input} niet gevonden
           </p>
         ) : (
-          <div>
-            <p className="cfa-display text-steel-300 text-6xl mb-4">Finishfoto</p>
-            <p className="text-steel-500 text-2xl">
-              Voer linksboven een startnummer in
-            </p>
-          </div>
+          <p className="text-steel-500 text-2xl">
+            Voer linksboven een startnummer in
+          </p>
         )}
       </main>
     </div>
