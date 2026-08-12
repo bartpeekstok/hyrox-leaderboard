@@ -18,7 +18,33 @@ export default function FinishfotoPage() {
   const [raceDate, setRaceDate] = useState("2026-05-30");
   const [input, setInput] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [barVisible, setBarVisible] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // In fullscreen: bedieningsbalk verbergen na 2,5s zonder muisbeweging
+  useEffect(() => {
+    function poke() {
+      setBarVisible(true);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (document.fullscreenElement) {
+        hideTimerRef.current = setTimeout(() => setBarVisible(false), 2500);
+      }
+    }
+    function onFullscreenChange() {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+      poke();
+    }
+    window.addEventListener("mousemove", poke);
+    window.addEventListener("touchstart", poke);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      window.removeEventListener("mousemove", poke);
+      window.removeEventListener("touchstart", poke);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -52,10 +78,8 @@ export default function FinishfotoPage() {
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullscreen(false);
     }
   }
 
@@ -72,9 +96,13 @@ export default function FinishfotoPage() {
     : "";
 
   return (
-    <div className="h-screen overflow-hidden bg-background flex flex-col">
-      {/* Bedieningsbalk — klein, valt weg op de foto */}
-      <header className="px-4 py-3 flex items-center gap-3">
+    <div className="relative h-screen overflow-hidden bg-background flex flex-col">
+      {/* Bedieningsbalk — zweeft bovenop, verdwijnt in fullscreen bij stilstaande muis */}
+      <header
+        className={`absolute top-0 left-0 right-0 z-10 px-4 py-3 flex items-center gap-3 transition-opacity duration-500 ${
+          barVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         <Link
           href="/"
           className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-steel-200 transition-colors shrink-0"
