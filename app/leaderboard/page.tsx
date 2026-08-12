@@ -342,7 +342,7 @@ export default function LeaderboardPage() {
                       {p.partnerName ? (
                         <span className="block leading-tight">
                           <span className="block truncate">{p.name}</span>
-                          <span className="block truncate">& {p.partnerName}</span>
+                          <span className="block truncate">{p.partnerName}</span>
                         </span>
                       ) : (
                         <span className="block truncate">{p.name}</span>
@@ -384,7 +384,7 @@ export default function LeaderboardPage() {
                   {p.partnerName ? (
                     <div className="font-bold text-sm sm:text-xl leading-tight text-gray-900">
                       <div className="truncate">{p.name}</div>
-                      <div className="truncate">& {p.partnerName}</div>
+                      <div className="truncate">{p.partnerName}</div>
                     </div>
                   ) : (
                     <div className="font-bold text-base sm:text-2xl text-gray-900 truncate">
@@ -571,7 +571,7 @@ function LatestFinishersFeed({ participants }: { participants: Participant[] }) 
                   {p.partnerName ? (
                     <div className="font-bold text-3xl xl:text-4xl leading-tight text-gray-900">
                       <div className="truncate">{p.name}</div>
-                      <div className="truncate">& {p.partnerName}</div>
+                      <div className="truncate">{p.partnerName}</div>
                     </div>
                   ) : (
                     <div className="font-bold text-5xl text-gray-900 truncate">
