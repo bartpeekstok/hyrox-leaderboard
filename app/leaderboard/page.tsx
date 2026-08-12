@@ -200,7 +200,7 @@ export default function LeaderboardPage() {
             <h1 className="cfa-display text-3xl sm:text-6xl text-cfa-ink truncate">
               HYROX <span className="text-cfa-blue">LEADERBOARD</span>
             </h1>
-            <p className="text-sm sm:text-lg text-steel-500 truncate leading-snug">
+            <p className="text-base sm:text-2xl font-semibold text-cfa-ink truncate leading-snug">
               CrossFit Alkmaar &mdash; {formatEventDate(raceDate)}
             </p>
           </div>

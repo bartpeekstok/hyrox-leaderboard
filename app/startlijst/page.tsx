@@ -103,7 +103,7 @@ export default function StartlijstPage() {
           <h1 className="cfa-display text-2xl sm:text-5xl text-cfa-ink">
             STARTLIJST
           </h1>
-          <p className="text-sm sm:text-base text-steel-500 truncate leading-snug">
+          <p className="text-base sm:text-xl font-semibold text-cfa-ink truncate leading-snug">
             CrossFit Alkmaar &mdash; {formatEventDate(raceDate)}
           </p>
         </div>
