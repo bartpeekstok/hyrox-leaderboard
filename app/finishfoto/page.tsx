@@ -140,6 +140,16 @@ export default function FinishfotoPage() {
 
       {/* Foto-kader — alle maten in vh zodat alles altijd in beeld past */}
       <main className="relative flex-1 min-h-0 flex flex-col items-center justify-center px-8 pb-[2vh] text-center">
+        {/* CFA-logo linksboven als zichtbare brand stamp */}
+        <Image
+          src="/logo_dark.png"
+          alt="CrossFit Alkmaar"
+          width={400}
+          height={200}
+          priority
+          className="absolute top-[3vh] left-[3vh] w-auto h-[14vh]"
+        />
+
         {/* CFA-logo als watermerk achter de content */}
         <Image
           src="/logo_dark.png"
@@ -154,23 +164,23 @@ export default function FinishfotoPage() {
           {/* Naamblok bovenaan */}
           {participant ? (
             <>
-              <h2 className="cfa-display text-cfa-ink text-[10vh] leading-[0.95] break-words max-w-full">
+              <h2 className="cfa-display text-cfa-ink text-[12vh] leading-[0.95] break-words max-w-full">
                 {participant.name}
               </h2>
               {participant.partnerName && (
-                <h2 className="cfa-display text-cfa-ink text-[10vh] leading-[0.95] break-words max-w-full">
+                <h2 className="cfa-display text-cfa-ink text-[12vh] leading-[0.95] break-words max-w-full">
                   {participant.partnerName}
                 </h2>
               )}
 
               <div
-                className={`mt-[2.5vh] px-8 py-[1.2vh] rounded-lg font-bold uppercase tracking-wider text-[3vh] ${badgeClasses}`}
+                className={`mt-[2.5vh] px-10 py-[1.4vh] rounded-lg font-bold uppercase tracking-wider text-[4vh] ${badgeClasses}`}
               >
                 {getClassLabel(participant)}
               </div>
 
               {participant.status === "finished" && participant.totalTime ? (
-                <div className="cfa-stat text-cfa-blue text-[13vh] leading-none mt-[2.5vh]">
+                <div className="cfa-stat text-cfa-blue text-[16vh] leading-none mt-[2.5vh]">
                   {formatTime(participant.totalTime)}
                 </div>
               ) : (
@@ -192,10 +202,10 @@ export default function FinishfotoPage() {
           )}
 
           {/* Eventblok: titel + datum onder de naam */}
-          <h1 className="cfa-display text-cfa-ink text-[7vh] leading-none mt-[6vh]">
+          <h1 className="cfa-display text-cfa-ink text-[12vh] leading-none mt-[5vh]">
             HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
           </h1>
-          <p className="text-cfa-ink font-semibold text-[2.5vh] mt-[1vh]">
+          <p className="text-cfa-ink font-semibold text-[3.5vh] mt-[1vh]">
             {formatEventDate(raceDate, true)}
           </p>
         </div>
