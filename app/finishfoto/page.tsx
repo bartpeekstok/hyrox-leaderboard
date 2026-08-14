@@ -147,7 +147,7 @@ export default function FinishfotoPage() {
           width={400}
           height={200}
           priority
-          className="absolute top-[3vh] left-[3vh] w-auto h-[14vh]"
+          className="absolute top-[6vh] left-[4vw] w-auto h-[14vh]"
         />
 
         {/* CFA-logo als watermerk achter de content */}
