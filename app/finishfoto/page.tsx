@@ -164,11 +164,11 @@ export default function FinishfotoPage() {
           {/* Naamblok bovenaan */}
           {participant ? (
             <>
-              <h2 className="cfa-display text-cfa-ink text-[12vh] leading-[0.95] break-words max-w-full">
+              <h2 className="cfa-display text-cfa-ink text-[14vh] leading-[0.95] break-words max-w-full">
                 {participant.name}
               </h2>
               {participant.partnerName && (
-                <h2 className="cfa-display text-cfa-ink text-[12vh] leading-[0.95] break-words max-w-full">
+                <h2 className="cfa-display text-cfa-ink text-[14vh] leading-[0.95] break-words max-w-full">
                   {participant.partnerName}
                 </h2>
               )}
