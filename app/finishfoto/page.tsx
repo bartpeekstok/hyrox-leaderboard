@@ -139,61 +139,66 @@ export default function FinishfotoPage() {
       </header>
 
       {/* Foto-kader — alle maten in vh zodat alles altijd in beeld past */}
-      <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-8 pb-[2vh] text-center">
-        {/* Vast kader: logo, eventnaam, datum */}
+      <main className="relative flex-1 min-h-0 flex flex-col items-center justify-center px-8 pb-[2vh] text-center">
+        {/* CFA-logo als watermerk achter de content */}
         <Image
           src="/logo_dark.png"
-          alt="CrossFit Alkmaar"
-          width={400}
-          height={200}
+          alt=""
+          width={800}
+          height={400}
           priority
-          className="w-auto h-[20vh] mb-[1.5vh]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-auto h-[70vh] max-w-[90vw] object-contain opacity-[0.07] pointer-events-none select-none"
         />
-        <h1 className="cfa-display text-cfa-ink text-[12vh] leading-none">
-          HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
-        </h1>
-        <p className="text-cfa-ink font-semibold text-[3vh] mt-[1vh] mb-[6vh]">
-          {formatEventDate(raceDate, true)}
-        </p>
 
-        {participant ? (
-          <>
-            <h2 className="cfa-display text-cfa-ink text-[9vh] leading-[0.95] break-words max-w-full">
-              {participant.name}
-            </h2>
-            {participant.partnerName && (
-              <h2 className="cfa-display text-cfa-ink text-[9vh] leading-[0.95] break-words max-w-full">
-                {participant.partnerName}
+        <div className="relative flex flex-col items-center max-w-full">
+          {/* Naamblok bovenaan */}
+          {participant ? (
+            <>
+              <h2 className="cfa-display text-cfa-ink text-[10vh] leading-[0.95] break-words max-w-full">
+                {participant.name}
               </h2>
-            )}
+              {participant.partnerName && (
+                <h2 className="cfa-display text-cfa-ink text-[10vh] leading-[0.95] break-words max-w-full">
+                  {participant.partnerName}
+                </h2>
+              )}
 
-            <div
-              className={`mt-[2.5vh] px-8 py-[1.2vh] rounded-lg font-bold uppercase tracking-wider text-[3vh] ${badgeClasses}`}
-            >
-              {getClassLabel(participant)}
-            </div>
-
-            {participant.status === "finished" && participant.totalTime ? (
-              <div className="cfa-stat text-cfa-blue text-[13vh] leading-none mt-[2.5vh]">
-                {formatTime(participant.totalTime)}
+              <div
+                className={`mt-[2.5vh] px-8 py-[1.2vh] rounded-lg font-bold uppercase tracking-wider text-[3vh] ${badgeClasses}`}
+              >
+                {getClassLabel(participant)}
               </div>
-            ) : (
-              <p className="text-steel-500 font-semibold text-[3.5vh] mt-[3vh]">
-                {participant.status === "racing"
-                  ? "Nog onderweg..."
-                  : "Nog niet gestart"}
-              </p>
-            )}
-          </>
-        ) : input ? (
-          <p className="text-steel-400 text-3xl">
-            Startnummer {input} niet gevonden
+
+              {participant.status === "finished" && participant.totalTime ? (
+                <div className="cfa-stat text-cfa-blue text-[13vh] leading-none mt-[2.5vh]">
+                  {formatTime(participant.totalTime)}
+                </div>
+              ) : (
+                <p className="text-steel-500 font-semibold text-[3.5vh] mt-[3vh]">
+                  {participant.status === "racing"
+                    ? "Nog onderweg..."
+                    : "Nog niet gestart"}
+                </p>
+              )}
+            </>
+          ) : input ? (
+            <p className="text-steel-400 text-3xl">
+              Startnummer {input} niet gevonden
+            </p>
+          ) : (
+            <p className="text-steel-500 text-2xl">
+              Voer linksboven een startnummer in
+            </p>
+          )}
+
+          {/* Eventblok: titel + datum onder de naam */}
+          <h1 className="cfa-display text-cfa-ink text-[7vh] leading-none mt-[6vh]">
+            HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
+          </h1>
+          <p className="text-cfa-ink font-semibold text-[2.5vh] mt-[1vh]">
+            {formatEventDate(raceDate, true)}
           </p>
-        ) : (
-          <p className="text-steel-500 text-2xl">
-            Voer linksboven een startnummer in
-          </p>
-        )}
+        </div>
       </main>
     </div>
   );
