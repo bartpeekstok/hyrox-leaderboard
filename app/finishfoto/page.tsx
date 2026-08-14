@@ -149,7 +149,7 @@ export default function FinishfotoPage() {
           priority
           className="w-auto h-[20vh] mb-[1.5vh]"
         />
-        <h1 className="cfa-display text-cfa-ink text-[9vh] leading-none">
+        <h1 className="cfa-display text-cfa-ink text-[12vh] leading-none">
           HYROX <span className="text-cfa-blue">RACE SIMULATION</span>
         </h1>
         <p className="text-cfa-ink font-semibold text-[3vh] mt-[1vh] mb-[6vh]">
