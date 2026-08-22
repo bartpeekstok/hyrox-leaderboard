@@ -16,6 +16,7 @@ import {
   Heat,
 } from "../lib/types";
 import { generateHeats } from "../lib/heat-scheduler";
+import { exportStartlistToExcel } from "../lib/export-startlist";
 import {
   getParticipants,
   addParticipant,
@@ -531,9 +532,18 @@ export default function AdminPage() {
           {/* Heats view */}
           {heats.length > 0 && (
             <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-bold mb-4">
-                Heat-indeling ({heats.length} heats)
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">
+                  Heat-indeling ({heats.length} heats)
+                </h2>
+                <button
+                  onClick={() => exportStartlistToExcel(participants, heats, raceDate)}
+                  className="text-sm px-4 py-2 bg-cfa-green hover:bg-cfa-green/85 text-white font-semibold rounded-lg transition-colors"
+                  title="Download de startlijst als Excel-bestand"
+                >
+                  Exporteer startlijst (Excel)
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {heats.map((heat) => {
                   const heatParticipants = heat.participantIds
