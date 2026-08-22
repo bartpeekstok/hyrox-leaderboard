@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import QRCode from "qrcode";
 import {
   Participant,
   formatTime,
@@ -12,15 +13,38 @@ import {
 } from "../lib/types";
 import { getParticipants, getSettings } from "../lib/store";
 import { supabase } from "../lib/supabase";
+import { useFinishfotoChannel } from "../lib/finishfoto-channel";
+
+const LAST_NUMBER_KEY = "finishfoto-startnummer";
 
 export default function FinishfotoPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [raceDate, setRaceDate] = useState("2026-05-30");
-  const [input, setInput] = useState("");
+  // Laatst getoonde nummer onthouden, zodat een herladen scherm niet leeg opent
+  const [input, setInput] = useState(() =>
+    typeof window === "undefined"
+      ? ""
+      : localStorage.getItem(LAST_NUMBER_KEY) ?? ""
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [barVisible, setBarVisible] = useState(true);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrSvg, setQrSvg] = useState("");
+  const [remoteUrl, setRemoteUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // De telefoon van de coach stuurt startnummers via een realtime broadcast —
+  // het scherm hoeft daarvoor nooit herladen te worden.
+  const { status } = useFinishfotoChannel({
+    role: "display",
+    value: input,
+    onValue: setInput,
+  });
+
+  useEffect(() => {
+    localStorage.setItem(LAST_NUMBER_KEY, input);
+  }, [input]);
 
   // In fullscreen: bedieningsbalk verbergen na 2,5s zonder muisbeweging
   useEffect(() => {
@@ -74,6 +98,19 @@ export default function FinishfotoPage() {
       supabase.removeChannel(channel);
     };
   }, [fetchData]);
+
+  // QR-code naar de mobiele afstandsbediening
+  async function openQr() {
+    const url = `${window.location.origin}/finishfoto/remote`;
+    setRemoteUrl(url);
+    setQrSvg("");
+    setQrOpen(true);
+    try {
+      setQrSvg(await QRCode.toString(url, { type: "svg", margin: 1, width: 320 }));
+    } catch {
+      setQrSvg("");
+    }
+  }
 
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
@@ -130,6 +167,31 @@ export default function FinishfotoPage() {
           </button>
         )}
         <div className="flex-1" />
+        <span
+          className="flex items-center gap-2 text-xs font-semibold text-steel-500"
+          title={
+            status === "connected"
+              ? "Verbonden met de mobiele bediening"
+              : "Geen verbinding met de mobiele bediening"
+          }
+        >
+          <span
+            className={`w-2.5 h-2.5 rounded-full ${
+              status === "connected"
+                ? "bg-cfa-green"
+                : status === "offline"
+                  ? "bg-cfa-red"
+                  : "bg-cfa-yellow"
+            }`}
+          />
+          Mobiel
+        </span>
+        <button
+          onClick={openQr}
+          className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-steel-200 transition-colors"
+        >
+          QR voor telefoon
+        </button>
         <button
           onClick={toggleFullscreen}
           className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-steel-200 transition-colors"
@@ -210,6 +272,42 @@ export default function FinishfotoPage() {
           </p>
         </div>
       </main>
+
+      {/* QR-overlay: coach scant en bedient het scherm vanaf zijn telefoon */}
+      {qrOpen && (
+        <div
+          onClick={() => setQrOpen(false)}
+          className="absolute inset-0 z-20 bg-cfa-ink/70 flex items-center justify-center p-8"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-xl"
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Bedien vanaf je telefoon
+            </h2>
+            <p className="text-steel-500 mb-6">
+              Scan de code, log in met het adminwachtwoord en typ het
+              startnummer — dit scherm volgt direct.
+            </p>
+            {qrSvg ? (
+              <div
+                className="mx-auto w-64 h-64 [&>svg]:w-full [&>svg]:h-full"
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
+              />
+            ) : (
+              <p className="text-steel-400">QR-code laden...</p>
+            )}
+            <p className="mt-4 text-sm text-steel-500 break-all">{remoteUrl}</p>
+            <button
+              onClick={() => setQrOpen(false)}
+              className="mt-6 w-full bg-cfa-blue text-white font-semibold py-3 rounded-lg hover:bg-cfa-blue-hover transition-colors"
+            >
+              Sluiten
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
